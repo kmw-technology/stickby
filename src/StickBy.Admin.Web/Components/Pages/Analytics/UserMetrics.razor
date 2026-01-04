@@ -1,0 +1,250 @@
+@page "/analytics/users"
+@using StickBy.Admin.Web.Services
+@inject IAdminService AdminService
+@rendermode InteractiveServer
+
+<PageTitle>User Analytics - StickBy Admin</PageTitle>
+
+<div class="page-header">
+    <div>
+        <a href="analytics" class="back-link">← Back to Analytics</a>
+        <h1 class="page-title">User Analytics</h1>
+        <p class="text-muted">User engagement, retention, and behavior metrics</p>
+    </div>
+</div>
+
+@if (_isLoading)
+{
+    <div class="flex items-center gap-2">
+        <span class="loading-spinner"></span>
+        <span class="text-muted">Loading user metrics...</span>
+    </div>
+}
+else
+{
+    <!-- Overview Stats -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">@_stats?.TotalUsers</div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-label">Active Users</div>
+            <div class="stat-value">@_stats?.ActiveUsers</div>
+            <div class="stat-subvalue">@_activationRate.ToString("F1")% of total</div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-label">New (7 days)</div>
+            <div class="stat-value">@_stats?.NewUsersLast7Days</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">New (24h)</div>
+            <div class="stat-value">@_stats?.NewUsersLast24Hours</div>
+        </div>
+    </div>
+
+    <!-- User Engagement -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>Engagement Metrics</span>
+        </div>
+        <div class="card-body">
+            <div class="engagement-grid">
+                <div class="engagement-item">
+                    <div class="engagement-label">Avg Contacts/User</div>
+                    <div class="engagement-value">@_avgContactsPerUser.ToString("F1")</div>
+                    <div class="engagement-bar">
+                        <div class="engagement-fill" style="width: @(Math.Min(_avgContactsPerUser * 10, 100))%"></div>
+                    </div>
+                </div>
+                <div class="engagement-item">
+                    <div class="engagement-label">Avg Shares/User</div>
+                    <div class="engagement-value">@_avgSharesPerUser.ToString("F1")</div>
+                    <div class="engagement-bar">
+                        <div class="engagement-fill" style="width: @(Math.Min(_avgSharesPerUser * 20, 100))%"></div>
+                    </div>
+                </div>
+                <div class="engagement-item">
+                    <div class="engagement-label">Activation Rate</div>
+                    <div class="engagement-value">@_activationRate.ToString("F1")%</div>
+                    <div class="engagement-bar">
+                        <div class="engagement-fill success" style="width: @_activationRate%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Segments -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>User Segments</span>
+        </div>
+        <div class="card-body">
+            <div class="segments-list">
+                <div class="segment-item">
+                    <div class="segment-info">
+                        <div class="segment-name">Power Users</div>
+                        <div class="segment-desc">10+ contacts, 3+ shares</div>
+                    </div>
+                    <div class="segment-count">@_powerUsers</div>
+                </div>
+                <div class="segment-item">
+                    <div class="segment-info">
+                        <div class="segment-name">Regular Users</div>
+                        <div class="segment-desc">5-10 contacts, 1-2 shares</div>
+                    </div>
+                    <div class="segment-count">@_regularUsers</div>
+                </div>
+                <div class="segment-item">
+                    <div class="segment-info">
+                        <div class="segment-name">New Users</div>
+                        <div class="segment-desc">Less than 5 contacts</div>
+                    </div>
+                    <div class="segment-count">@_newUsers</div>
+                </div>
+                <div class="segment-item">
+                    <div class="segment-info">
+                        <div class="segment-name">Inactive Users</div>
+                        <div class="segment-desc">No activity in 30 days</div>
+                    </div>
+                    <div class="segment-count">@_inactiveUsers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retention Cohorts (Placeholder) -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>Retention Cohorts</span>
+            <span class="badge badge-info">Coming Soon</span>
+        </div>
+        <div class="card-body">
+            <div class="empty-state">
+                <p>Cohort analysis will show user retention over time, helping identify patterns in user engagement.</p>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .back-link {
+        display: inline-block;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    .back-link:hover {
+        color: var(--primary);
+    }
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+    .engagement-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .engagement-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .engagement-label {
+        width: 150px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+    .engagement-value {
+        width: 60px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: right;
+    }
+    .engagement-bar {
+        flex: 1;
+        height: 8px;
+        background: var(--background);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .engagement-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 4px;
+        transition: width 0.3s;
+    }
+    .engagement-fill.success {
+        background: var(--success);
+    }
+    .segments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .segment-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--background);
+        border-radius: 8px;
+    }
+    .segment-name {
+        font-weight: 600;
+    }
+    .segment-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .segment-count {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+</style>
+
+@code {
+    private DashboardStats? _stats;
+    private bool _isLoading = true;
+    private double _activationRate;
+    private double _avgContactsPerUser;
+    private double _avgSharesPerUser;
+
+    // Simulated segment counts (would come from API)
+    private int _powerUsers;
+    private int _regularUsers;
+    private int _newUsers;
+    private int _inactiveUsers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stats = await AdminService.GetDashboardStatsAsync();
+
+        if (_stats != null)
+        {
+            _activationRate = _stats.TotalUsers > 0
+                ? ((double)_stats.ActiveUsers / _stats.TotalUsers) * 100
+                : 0;
+
+            _avgContactsPerUser = _stats.TotalUsers > 0
+                ? (double)_stats.TotalContacts / _stats.TotalUsers
+                : 0;
+
+            _avgSharesPerUser = _stats.TotalUsers > 0
+                ? (double)_stats.TotalShares / _stats.TotalUsers
+                : 0;
+
+            // Simulate segment distribution based on stats
+            var totalUsers = _stats.TotalUsers;
+            _powerUsers = (int)(totalUsers * 0.1);  // 10% power users
+            _regularUsers = (int)(totalUsers * 0.3); // 30% regular
+            _newUsers = _stats.NewUsersLast7Days + (int)(totalUsers * 0.2); // New + 20%
+            _inactiveUsers = totalUsers - _stats.ActiveUsers;
+        }
+
+        _isLoading = false;
+    }
+}

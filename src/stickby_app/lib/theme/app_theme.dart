@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Primary colors - matching website CSS
-  static const Color primary = Color(0xFF2563EB);
+  // Primary colors - Legacy cyan-blue style
+  static const Color primary = Color(0xFF3BB4F4);      // Legacy cyan-blue
+  static const Color primaryDark = Color(0xFF2563EB);  // Darker blue for contrast
   static const Color primaryHover = Color(0xFF1D4ED8);
   static const Color primaryLight = Color(0xFFDBEAFE);
+
+  // Gradient colors (for buttons)
+  static const Color gradientStart = Color(0xFF56D2FF);  // Cyan
+  static const Color gradientMiddle = Color(0xFF3BB4F4); // Light blue
+  static const Color gradientEnd = Color(0xFF2563EB);    // Blue
 
   // Secondary colors
   static const Color secondary = Color(0xFF64748B);
@@ -18,6 +24,8 @@ class AppColors {
   static const Color dangerLight = Color(0xFFFEE2E2);
   static const Color warning = Color(0xFFF59E0B);
   static const Color warningLight = Color(0xFFFEF3C7);
+  static const Color info = Color(0xFF06B6D4);
+  static const Color infoLight = Color(0xFFCFFAFE);
 
   // Neutral colors
   static const Color background = Color(0xFFF8FAFC);
@@ -85,7 +93,7 @@ class AppTheme {
       ),
 
       // Cards
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -222,7 +230,7 @@ class AppTheme {
       ),
 
       // Dialog
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -258,79 +266,90 @@ class AppTheme {
         ),
       ),
 
-      // Text theme
-      textTheme: GoogleFonts.interTextTheme().copyWith(
-        displayLarge: GoogleFonts.inter(
+      // Text theme - BungeeShade for branding, Roboto for body (like legacy)
+      textTheme: GoogleFonts.robotoTextTheme().copyWith(
+        // BungeeShade for display/branding headlines
+        displayLarge: GoogleFonts.bungeeShade(
           fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
+          color: AppColors.primary,
         ),
-        displayMedium: GoogleFonts.inter(
+        displayMedium: GoogleFonts.bungeeShade(
           fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
+          color: AppColors.primary,
         ),
-        displaySmall: GoogleFonts.inter(
+        displaySmall: GoogleFonts.bungeeShade(
           fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
+          color: AppColors.primary,
         ),
-        headlineLarge: GoogleFonts.inter(
+        // Roboto for headings
+        headlineLarge: GoogleFonts.roboto(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.5,
         ),
-        headlineMedium: GoogleFonts.inter(
+        headlineMedium: GoogleFonts.roboto(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.5,
         ),
-        headlineSmall: GoogleFonts.inter(
+        headlineSmall: GoogleFonts.roboto(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.25,
         ),
-        titleLarge: GoogleFonts.inter(
+        titleLarge: GoogleFonts.roboto(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.25,
         ),
-        titleMedium: GoogleFonts.inter(
+        titleMedium: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.25,
         ),
-        titleSmall: GoogleFonts.inter(
+        titleSmall: GoogleFonts.roboto(
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.25,
         ),
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: GoogleFonts.roboto(
           fontSize: 16,
           color: AppColors.textPrimary,
+          letterSpacing: 0.5,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: GoogleFonts.roboto(
           fontSize: 14,
           color: AppColors.textPrimary,
+          letterSpacing: 0.25,
         ),
-        bodySmall: GoogleFonts.inter(
+        bodySmall: GoogleFonts.roboto(
           fontSize: 12,
           color: AppColors.textSecondary,
+          letterSpacing: 0.25,
         ),
-        labelLarge: GoogleFonts.inter(
+        labelLarge: GoogleFonts.roboto(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
+          letterSpacing: 0.5,
         ),
-        labelMedium: GoogleFonts.inter(
+        labelMedium: GoogleFonts.roboto(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.textSecondary,
+          letterSpacing: 0.5,
         ),
-        labelSmall: GoogleFonts.inter(
+        labelSmall: GoogleFonts.roboto(
           fontSize: 10,
           fontWeight: FontWeight.w500,
           color: AppColors.textMuted,
+          letterSpacing: 0.5,
         ),
       ),
     );

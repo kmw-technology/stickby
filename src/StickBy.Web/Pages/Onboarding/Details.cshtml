@@ -1,0 +1,171 @@
+@page
+@model StickBy.Web.Pages.Onboarding.DetailsModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["onboarding.details"];
+    Layout = "_LayoutMinimal";
+}
+
+<div class="onboarding-container">
+    <div class="onboarding-card">
+        <div class="onboarding-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+            </svg>
+        </div>
+
+        <h1 class="onboarding-title">@L["onboarding.detailsTitle"]</h1>
+        <p class="onboarding-subtitle">@L["onboarding.detailsMessage"]</p>
+
+        <form method="post">
+            <div class="form-group">
+                <label class="form-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    @L["onboarding.phoneLabel"]
+                </label>
+                <input type="tel" asp-for="Phone" class="form-control" placeholder="@L["onboarding.phonePlaceholder"]" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    @L["onboarding.emailLabel"]
+                </label>
+                <input type="email" asp-for="Email" class="form-control" placeholder="@L["onboarding.emailPlaceholder"]" />
+            </div>
+
+            <p class="form-hint">@L["onboarding.detailsHint"]</p>
+
+            <div class="form-actions">
+                <button type="submit" asp-page-handler="Skip" class="btn-secondary">
+                    @L["onboarding.skip"]
+                </button>
+                <button type="submit" class="btn-primary">
+                    @L["onboarding.complete"]
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="onboarding-progress">
+        <span class="progress-dot"></span>
+        <span class="progress-dot active"></span>
+    </div>
+</div>
+
+<style>
+    .onboarding-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: var(--background);
+    }
+    .onboarding-card {
+        background: var(--surface);
+        border-radius: 1rem;
+        padding: 2.5rem;
+        max-width: 420px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .onboarding-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+    }
+    .onboarding-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    .onboarding-subtitle {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+    .form-group {
+        margin-bottom: 1.25rem;
+        text-align: left;
+    }
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-hint {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin: 1.5rem 0;
+        padding: 0.75rem;
+        background: var(--background);
+        border-radius: 0.5rem;
+        text-align: left;
+    }
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    .form-actions .btn-secondary {
+        flex: 1;
+    }
+    .form-actions .btn-primary {
+        flex: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .onboarding-progress {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .progress-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+    }
+    .progress-dot.active {
+        background: var(--primary-color);
+        width: 24px;
+        border-radius: 4px;
+    }
+</style>

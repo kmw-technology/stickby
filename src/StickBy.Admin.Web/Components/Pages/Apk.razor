@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAdminService AdminService
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 <PageTitle>APK Downloads - StickBy Admin</PageTitle>
@@ -241,18 +242,12 @@
     {
         try
         {
-            var fileData = await AdminService.GetApkFileAsync(release.Id);
-            if (fileData != null)
-            {
-                // Trigger download via JavaScript
-                var base64 = Convert.ToBase64String(fileData);
-                await JS.InvokeVoidAsync("eval", $@"
-                    var link = document.createElement('a');
-                    link.href = 'data:application/vnd.android.package-archive;base64,{base64}';
-                    link.download = '{release.FileName}';
-                    link.click();
-                ");
-            }
+            // Build the download URL using NavigationManager's base URI
+            var baseUri = NavigationManager.BaseUri.TrimEnd('/');
+            var downloadUrl = $"{baseUri}/api/apk-download/{release.Id}";
+
+            // Open in new tab - browser will handle the download
+            await JS.InvokeVoidAsync("eval", $@"window.open('{downloadUrl}', '_blank');");
         }
         catch (Exception ex)
         {

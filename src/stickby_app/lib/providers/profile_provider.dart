@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/profile.dart';
 import '../services/api_service.dart';
+import '../services/demo_service.dart';
 
 class ProfileProvider with ChangeNotifier {
   final ApiService _apiService;
+  final DemoService _demoService = DemoService();
 
   Profile? _profile;
   bool _isLoading = false;
@@ -12,11 +15,20 @@ class ProfileProvider with ChangeNotifier {
   ProfileProvider({ApiService? apiService})
       : _apiService = apiService ?? ApiService();
 
-  Profile? get profile => _profile;
+  /// Returns profile - from demo service if in demo mode.
+  Profile? get profile => _demoService.isEnabled
+      ? _demoService.demoProfile
+      : _profile;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
   Future<void> loadProfile() async {
+    // Skip API call in demo mode
+    if (_demoService.isEnabled) {
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -35,6 +47,13 @@ class ProfileProvider with ChangeNotifier {
     required String displayName,
     String? bio,
   }) async {
+    // Demo mode - simulate success (changes are in-memory only)
+    if (_demoService.isEnabled) {
+      // Demo mode doesn't persist changes
+      notifyListeners();
+      return true;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -56,22 +75,44 @@ class ProfileProvider with ChangeNotifier {
   }
 
   Future<bool> updateReleaseGroups(
-    Map<String, int> contactReleaseGroups,
+    List<Map<String, dynamic>> updates,
   ) async {
+    // Demo mode - simulate success
+    if (_demoService.isEnabled) {
+      notifyListeners();
+      return true;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final updates = contactReleaseGroups.entries
-          .map((e) => {
-                'contactId': e.key,
-                'releaseGroups': e.value,
-              })
-          .toList();
-
       await _apiService.updateReleaseGroups(updates);
       await loadProfile(); // Reload to get updated data
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> uploadProfileImage(File imageFile) async {
+    // Demo mode - simulate success (image upload not supported)
+    if (_demoService.isEnabled) {
+      notifyListeners();
+      return true;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _apiService.uploadProfileImage(imageFile);
+      await loadProfile(); // Reload to get updated image URL
       return true;
     } catch (e) {
       _errorMessage = e.toString();

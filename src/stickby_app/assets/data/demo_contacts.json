@@ -1,0 +1,170 @@
+[
+  {
+    "id": "demo-cn-001",
+    "type": 0,
+    "label": "Clara Nguyen - Email",
+    "value": "clara.Nguyen@web.de",
+    "sortOrder": 0,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-cn-002",
+    "type": 1,
+    "label": "Clara Nguyen - Phone",
+    "value": "+498940038393",
+    "sortOrder": 1,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-cn-003",
+    "type": 401,
+    "label": "Clara Nguyen - Instagram",
+    "value": "Clara_ngu",
+    "sortOrder": 2,
+    "releaseGroups": 10
+  },
+  {
+    "id": "demo-cn-004",
+    "type": 402,
+    "label": "Clara Nguyen - LinkedIn",
+    "value": "linkedin.com/in/Clara-Nguyen-66217462",
+    "sortOrder": 3,
+    "releaseGroups": 4
+  },
+  {
+    "id": "demo-ab-001",
+    "type": 0,
+    "label": "Andreas Bauer - Email",
+    "value": "andreas.bauer@gmail.com",
+    "sortOrder": 4,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-ab-002",
+    "type": 1,
+    "label": "Andreas Bauer - Phone",
+    "value": "+498940038393",
+    "sortOrder": 5,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-ab-003",
+    "type": 300,
+    "label": "Andreas Bauer - Company",
+    "value": "Bauer Engineering GmbH",
+    "sortOrder": 6,
+    "releaseGroups": 4
+  },
+  {
+    "id": "demo-aw-001",
+    "type": 0,
+    "label": "Andrea Wimmer - Email",
+    "value": "andrea.wimmer@example.com",
+    "sortOrder": 7,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-aw-002",
+    "type": 401,
+    "label": "Andrea Wimmer - Instagram",
+    "value": "andrea_wim",
+    "sortOrder": 8,
+    "releaseGroups": 10
+  },
+  {
+    "id": "demo-ad-001",
+    "type": 0,
+    "label": "Anna Dannhauser - Email",
+    "value": "anna.dannhauser@example.com",
+    "sortOrder": 9,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-ad-002",
+    "type": 400,
+    "label": "Anna Dannhauser - Facebook",
+    "value": "facebook.com/anna.dannhauser",
+    "sortOrder": 10,
+    "releaseGroups": 10
+  },
+  {
+    "id": "demo-sk-001",
+    "type": 0,
+    "label": "Stefan Keller - Email",
+    "value": "stefan.keller@example.com",
+    "sortOrder": 11,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-sk-002",
+    "type": 1,
+    "label": "Stefan Keller - Phone",
+    "value": "+498940045678",
+    "sortOrder": 12,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-sk-003",
+    "type": 300,
+    "label": "Stefan Keller - Company",
+    "value": "Siemens AG",
+    "sortOrder": 13,
+    "releaseGroups": 4
+  },
+  {
+    "id": "demo-sk-004",
+    "type": 501,
+    "label": "Stefan Keller - Discord",
+    "value": "stefank#5678",
+    "sortOrder": 14,
+    "releaseGroups": 10
+  },
+  {
+    "id": "demo-tb-001",
+    "type": 0,
+    "label": "Tobias Bauer - Email",
+    "value": "tobias.bauer@example.com",
+    "sortOrder": 15,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-tb-002",
+    "type": 300,
+    "label": "Tobias Bauer - Company",
+    "value": "Elektro GmbH",
+    "sortOrder": 16,
+    "releaseGroups": 4
+  },
+  {
+    "id": "demo-jb-001",
+    "type": 0,
+    "label": "Jana Belawa - Email",
+    "value": "jana.belawa@example.com",
+    "sortOrder": 17,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-jb-002",
+    "type": 401,
+    "label": "Jana Belawa - Instagram",
+    "value": "jana_bela",
+    "sortOrder": 18,
+    "releaseGroups": 10
+  },
+  {
+    "id": "demo-la-001",
+    "type": 0,
+    "label": "Leonie Austin - Email",
+    "value": "leonie.austin@example.com",
+    "sortOrder": 19,
+    "releaseGroups": 15
+  },
+  {
+    "id": "demo-la-002",
+    "type": 402,
+    "label": "Leonie Austin - LinkedIn",
+    "value": "linkedin.com/in/leonie-austin-99887766",
+    "sortOrder": 20,
+    "releaseGroups": 4
+  }
+]

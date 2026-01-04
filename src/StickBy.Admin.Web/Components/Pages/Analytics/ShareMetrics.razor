@@ -1,0 +1,293 @@
+@page "/analytics/shares"
+@using StickBy.Admin.Web.Services
+@inject IAdminService AdminService
+@rendermode InteractiveServer
+
+<PageTitle>Share Analytics - StickBy Admin</PageTitle>
+
+<div class="page-header">
+    <div>
+        <a href="analytics" class="back-link">← Back to Analytics</a>
+        <h1 class="page-title">Share Analytics</h1>
+        <p class="text-muted">Share creation, views, and conversion metrics</p>
+    </div>
+</div>
+
+@if (_isLoading)
+{
+    <div class="flex items-center gap-2">
+        <span class="loading-spinner"></span>
+        <span class="text-muted">Loading share metrics...</span>
+    </div>
+}
+else
+{
+    <!-- Overview Stats -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-label">Total Shares</div>
+            <div class="stat-value">@_stats?.TotalShares</div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-label">Total Views</div>
+            <div class="stat-value">@_stats?.TotalShareViews</div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-label">View/Share Ratio</div>
+            <div class="stat-value">@_viewToShareRatio.ToString("F2")x</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Contacts Shared</div>
+            <div class="stat-value">@_stats?.TotalContacts</div>
+        </div>
+    </div>
+
+    <!-- Share Distribution -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>Share Type Distribution</span>
+        </div>
+        <div class="card-body">
+            <div class="distribution-chart">
+                <div class="dist-item">
+                    <div class="dist-label">
+                        <span class="dist-dot qr"></span>
+                        QR Code Shares
+                    </div>
+                    <div class="dist-bar-container">
+                        <div class="dist-bar qr" style="width: @_qrSharePercentage%"></div>
+                    </div>
+                    <div class="dist-value">@_qrSharePercentage%</div>
+                </div>
+                <div class="dist-item">
+                    <div class="dist-label">
+                        <span class="dist-dot link"></span>
+                        Link Shares
+                    </div>
+                    <div class="dist-bar-container">
+                        <div class="dist-bar link" style="width: @_linkSharePercentage%"></div>
+                    </div>
+                    <div class="dist-value">@_linkSharePercentage%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Performance -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>Share Performance</span>
+        </div>
+        <div class="card-body">
+            <div class="performance-grid">
+                <div class="perf-card">
+                    <div class="perf-icon views">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <div class="perf-label">Avg Views/Share</div>
+                    <div class="perf-value">@_avgViewsPerShare.ToString("F1")</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon contacts">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="perf-label">Avg Contacts/Share</div>
+                    <div class="perf-value">@_avgContactsPerShare.ToString("F1")</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon active">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
+                    <div class="perf-label">Active Shares</div>
+                    <div class="perf-value">@_activeShares</div>
+                </div>
+                <div class="perf-card">
+                    <div class="perf-icon expired">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <div class="perf-label">Expired Shares</div>
+                    <div class="perf-value">@_expiredShares</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Activity Heatmap (Placeholder) -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>Activity Heatmap</span>
+            <span class="badge badge-info">Coming Soon</span>
+        </div>
+        <div class="card-body">
+            <div class="empty-state">
+                <p>The activity heatmap will show when shares are most frequently created and viewed throughout the week.</p>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .back-link {
+        display: inline-block;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    .back-link:hover {
+        color: var(--primary);
+    }
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+    .distribution-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .dist-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .dist-label {
+        width: 150px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .dist-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    .dist-dot.qr {
+        background: var(--primary);
+    }
+    .dist-dot.link {
+        background: var(--success);
+    }
+    .dist-bar-container {
+        flex: 1;
+        height: 24px;
+        background: var(--background);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .dist-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s;
+    }
+    .dist-bar.qr {
+        background: var(--primary);
+    }
+    .dist-bar.link {
+        background: var(--success);
+    }
+    .dist-value {
+        width: 50px;
+        text-align: right;
+        font-weight: 600;
+    }
+    .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    .perf-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        background: var(--background);
+        border-radius: 12px;
+        text-align: center;
+    }
+    .perf-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+    }
+    .perf-icon.views {
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--primary);
+    }
+    .perf-icon.contacts {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success);
+    }
+    .perf-icon.active {
+        background: rgba(6, 182, 212, 0.1);
+        color: var(--info);
+    }
+    .perf-icon.expired {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+    }
+    .perf-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 0.25rem;
+    }
+    .perf-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+</style>
+
+@code {
+    private DashboardStats? _stats;
+    private bool _isLoading = true;
+    private double _viewToShareRatio;
+    private double _avgViewsPerShare;
+    private double _avgContactsPerShare;
+
+    // Simulated metrics (would come from API)
+    private int _qrSharePercentage = 65;
+    private int _linkSharePercentage = 35;
+    private int _activeShares;
+    private int _expiredShares;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stats = await AdminService.GetDashboardStatsAsync();
+
+        if (_stats != null)
+        {
+            _viewToShareRatio = _stats.TotalShares > 0
+                ? (double)_stats.TotalShareViews / _stats.TotalShares
+                : 0;
+
+            _avgViewsPerShare = _stats.TotalShares > 0
+                ? (double)_stats.TotalShareViews / _stats.TotalShares
+                : 0;
+
+            _avgContactsPerShare = _stats.TotalShares > 0
+                ? (double)_stats.TotalContacts / _stats.TotalShares
+                : 0;
+
+            // Simulate active/expired distribution
+            _activeShares = (int)(_stats.TotalShares * 0.7);
+            _expiredShares = _stats.TotalShares - _activeShares;
+        }
+
+        _isLoading = false;
+    }
+}

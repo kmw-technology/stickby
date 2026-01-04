@@ -1,0 +1,284 @@
+@page "/analytics"
+@using StickBy.Admin.Web.Services
+@inject IAdminService AdminService
+@rendermode InteractiveServer
+
+<PageTitle>Analytics - StickBy Admin</PageTitle>
+
+<div class="page-header">
+    <h1 class="page-title">Analytics Dashboard</h1>
+    <p class="text-muted">Platform-wide metrics and insights</p>
+</div>
+
+@if (_isLoading)
+{
+    <div class="flex items-center gap-2">
+        <span class="loading-spinner"></span>
+        <span class="text-muted">Loading analytics...</span>
+    </div>
+}
+else
+{
+    <!-- Key Metrics -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">@_stats?.TotalUsers</div>
+            <div class="stat-subvalue">
+                <span class="text-success">+@_stats?.NewUsersLast7Days</span> this week
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Contacts</div>
+            <div class="stat-value">@_stats?.TotalContacts</div>
+            <div class="stat-subvalue">
+                @_avgContactsPerUser.ToString("F1") per user avg
+            </div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-label">Total Shares</div>
+            <div class="stat-value">@_stats?.TotalShares</div>
+            <div class="stat-subvalue">
+                @_stats?.TotalShareViews total views
+            </div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-label">View-to-Share Ratio</div>
+            <div class="stat-value">@_viewToShareRatio.ToString("F2")x</div>
+            <div class="stat-subvalue">
+                Views per share created
+            </div>
+        </div>
+    </div>
+
+    <!-- Growth Metrics -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>Growth Metrics</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <div class="metric-box">
+                        <div class="metric-label">New Users (24h)</div>
+                        <div class="metric-value text-primary">@_stats?.NewUsersLast24Hours</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="metric-box">
+                        <div class="metric-label">New Users (7d)</div>
+                        <div class="metric-value text-primary">@_stats?.NewUsersLast7Days</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="metric-box">
+                        <div class="metric-label">Active Users</div>
+                        <div class="metric-value text-success">@_stats?.ActiveUsers</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="metric-box">
+                        <div class="metric-label">Activation Rate</div>
+                        <div class="metric-value text-info">@_activationRate.ToString("F1")%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Health -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <span>Platform Health</span>
+        </div>
+        <div class="card-body">
+            <div class="health-indicators">
+                <div class="health-item @(_stats?.ActiveUsers > 0 ? "healthy" : "warning")">
+                    <div class="health-dot"></div>
+                    <span>User Activity</span>
+                    <span class="health-status">@(_stats?.ActiveUsers > 0 ? "Active" : "Low")</span>
+                </div>
+                <div class="health-item @(_stats?.TotalShares > 0 ? "healthy" : "warning")">
+                    <div class="health-dot"></div>
+                    <span>Share Creation</span>
+                    <span class="health-status">@(_stats?.TotalShares > 0 ? "Active" : "Low")</span>
+                </div>
+                <div class="health-item healthy">
+                    <div class="health-dot"></div>
+                    <span>API Status</span>
+                    <span class="health-status">Operational</span>
+                </div>
+                <div class="health-item healthy">
+                    <div class="health-dot"></div>
+                    <span>Database</span>
+                    <span class="health-status">Connected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="quick-links mt-4">
+        <a href="analytics/users" class="quick-link-card">
+            <div class="quick-link-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <div class="quick-link-title">User Analytics</div>
+            <div class="quick-link-desc">Engagement, retention, cohorts</div>
+        </a>
+        <a href="analytics/shares" class="quick-link-card">
+            <div class="quick-link-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                </svg>
+            </div>
+            <div class="quick-link-title">Share Analytics</div>
+            <div class="quick-link-desc">Views, conversions, trends</div>
+        </a>
+    </div>
+}
+
+<style>
+    .row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .col {
+        flex: 1;
+        min-width: 150px;
+    }
+    .metric-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+    .metric-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .metric-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-top: 0.25rem;
+    }
+    .health-indicators {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .health-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: var(--background);
+        border-radius: 8px;
+    }
+    .health-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    .health-item.healthy .health-dot {
+        background: var(--success);
+        box-shadow: 0 0 8px var(--success);
+    }
+    .health-item.warning .health-dot {
+        background: var(--warning);
+        box-shadow: 0 0 8px var(--warning);
+    }
+    .health-item.danger .health-dot {
+        background: var(--danger);
+        box-shadow: 0 0 8px var(--danger);
+    }
+    .health-status {
+        margin-left: auto;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    .quick-links {
+        display: flex;
+        gap: 1rem;
+    }
+    .quick-link-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s;
+    }
+    .quick-link-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+    .quick-link-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-light);
+        border-radius: 12px;
+        color: var(--primary);
+        margin-bottom: 0.75rem;
+    }
+    .quick-link-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    .quick-link-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+</style>
+
+@code {
+    private DashboardStats? _stats;
+    private bool _isLoading = true;
+    private double _viewToShareRatio;
+    private double _activationRate;
+    private double _avgContactsPerUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stats = await AdminService.GetDashboardStatsAsync();
+
+        // Calculate derived metrics
+        if (_stats != null)
+        {
+            _viewToShareRatio = _stats.TotalShares > 0
+                ? (double)_stats.TotalShareViews / _stats.TotalShares
+                : 0;
+
+            _activationRate = _stats.TotalUsers > 0
+                ? ((double)_stats.ActiveUsers / _stats.TotalUsers) * 100
+                : 0;
+
+            _avgContactsPerUser = _stats.TotalUsers > 0
+                ? (double)_stats.TotalContacts / _stats.TotalUsers
+                : 0;
+        }
+
+        _isLoading = false;
+    }
+}

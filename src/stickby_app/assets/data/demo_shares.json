@@ -1,0 +1,35 @@
+[
+  {
+    "id": "demo-share-001",
+    "name": "Business Contacts",
+    "token": "demo-token-biz-123",
+    "contactIds": ["demo-contact-005", "demo-contact-006", "demo-contact-007", "demo-contact-008", "demo-contact-009", "demo-contact-010"],
+    "releaseGroups": 4,
+    "expiresAt": "2025-03-01T00:00:00Z",
+    "viewCount": 12,
+    "maxViews": null,
+    "createdAt": "2024-12-01T10:00:00Z"
+  },
+  {
+    "id": "demo-share-002",
+    "name": "Social Media",
+    "token": "demo-token-social-456",
+    "contactIds": ["demo-contact-011", "demo-contact-013", "demo-contact-014"],
+    "releaseGroups": 10,
+    "expiresAt": "2025-02-15T00:00:00Z",
+    "viewCount": 8,
+    "maxViews": 50,
+    "createdAt": "2024-12-15T16:30:00Z"
+  },
+  {
+    "id": "demo-share-003",
+    "name": "Family Contact Info",
+    "token": "demo-token-family-789",
+    "contactIds": ["demo-contact-001", "demo-contact-002", "demo-contact-003", "demo-contact-004"],
+    "releaseGroups": 1,
+    "expiresAt": null,
+    "viewCount": 3,
+    "maxViews": null,
+    "createdAt": "2024-11-20T12:00:00Z"
+  }
+]

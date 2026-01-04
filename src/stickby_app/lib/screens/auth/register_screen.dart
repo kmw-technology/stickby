@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
+import '../../widgets/gradient_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -31,20 +31,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.register(
-      _emailController.text.trim(),
-      _passwordController.text,
-      _displayNameController.text.trim(),
-    );
 
-    if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Registration failed'),
-          backgroundColor: AppColors.danger,
-        ),
+    try {
+      final success = await authProvider.register(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _displayNameController.text.trim(),
       );
+
+      if (mounted) {
+        if (success) {
+          // Logout to force login again
+          await authProvider.logout();
+
+          // Show success message and go back to login
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully! Please sign in.'),
+              backgroundColor: AppColors.success,
+              duration: Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          Navigator.of(context).pop();
+        } else {
+          // Get error message, cleaning up common prefixes
+          String errorMsg = authProvider.errorMessage ?? 'Registration failed. Please try again.';
+          errorMsg = errorMsg.replaceAll('ApiException: ', '');
+          errorMsg = errorMsg.replaceAll('Exception: ', '');
+          if (errorMsg.isEmpty || errorMsg == 'An error occurred') {
+            errorMsg = 'Registration failed. Please try again.';
+          }
+          _showError(errorMsg);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMsg = e.toString();
+        if (errorMsg.contains('SocketException') || errorMsg.contains('ClientException')) {
+          errorMsg = 'Network error. Please check your internet connection.';
+        } else if (errorMsg.contains('TimeoutException')) {
+          errorMsg = 'Connection timed out. Please try again.';
+        }
+        _showError(errorMsg);
+      }
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.danger,
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -67,6 +109,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Logo
+                    Image.asset(
+                      'assets/stickby_logo.png',
+                      width: 80,
+                      height: 80,
+                    ),
+                    const SizedBox(height: 16),
                     // Title
                     Text(
                       'Sign Up',
@@ -163,17 +212,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 24),
 
                     // Register button
-                    AppButton(
+                    GradientButton(
                       label: 'Create Account',
                       onPressed: _handleRegister,
                       isLoading: authProvider.isLoading,
                       isFullWidth: true,
+                      icon: Icons.person_add,
                     ),
                     const SizedBox(height: 16),
 
                     // Login link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           'Already have an account? ',

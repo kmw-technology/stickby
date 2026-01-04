@@ -1,0 +1,196 @@
+@page "{id:guid}"
+@model StickBy.Web.Pages.Contacts.EditModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["contact.edit"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["contact.edit"]</h1>
+    <a href="~/Contacts" class="btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        @L["common.back"]
+    </a>
+</div>
+
+<div class="form-card">
+    <form method="post">
+        <input type="hidden" asp-for="ContactId" />
+        <div asp-validation-summary="All" class="validation-summary"></div>
+
+        <div class="form-group">
+            <label asp-for="Contact.Type" class="form-label">Typ</label>
+            <select asp-for="Contact.Type" class="form-control">
+                <optgroup label="@L["category.personal"]">
+                    @foreach (var type in Model.GetContactTypes().Where(t => t.Category == "personal"))
+                    {
+                        <option value="@((int)type.Type)">@type.Name</option>
+                    }
+                </optgroup>
+                <optgroup label="@L["category.private"]">
+                    @foreach (var type in Model.GetContactTypes().Where(t => t.Category == "private"))
+                    {
+                        <option value="@((int)type.Type)">@type.Name</option>
+                    }
+                </optgroup>
+                <optgroup label="@L["category.business"]">
+                    @foreach (var type in Model.GetContactTypes().Where(t => t.Category == "business"))
+                    {
+                        <option value="@((int)type.Type)">@type.Name</option>
+                    }
+                </optgroup>
+                <optgroup label="@L["category.social"]">
+                    @foreach (var type in Model.GetContactTypes().Where(t => t.Category == "social"))
+                    {
+                        <option value="@((int)type.Type)">@type.Name</option>
+                    }
+                </optgroup>
+                <optgroup label="@L["category.gaming"]">
+                    @foreach (var type in Model.GetContactTypes().Where(t => t.Category == "gaming"))
+                    {
+                        <option value="@((int)type.Type)">@type.Name</option>
+                    }
+                </optgroup>
+                <optgroup label="Sonstiges">
+                    @foreach (var type in Model.GetContactTypes().Where(t => t.Category == "other"))
+                    {
+                        <option value="@((int)type.Type)">@type.Name</option>
+                    }
+                </optgroup>
+            </select>
+            <span asp-validation-for="Contact.Type" class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Contact.Label" class="form-label">Bezeichnung</label>
+            <input asp-for="Contact.Label" class="form-control" placeholder="z.B. Privat, Arbeit, ..." />
+            <span asp-validation-for="Contact.Label" class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Contact.Value" class="form-label">Wert</label>
+            <input asp-for="Contact.Value" class="form-control" placeholder="z.B. +49 123 456789" />
+            <span asp-validation-for="Contact.Value" class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">@L["profile.releaseGroups"]</label>
+            <p class="form-hint">Wer darf diese Information sehen?</p>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" asp-for="ReleaseFamily" />
+                    <span class="checkbox-text">@L["releaseGroups.family"]</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" asp-for="ReleaseFriends" />
+                    <span class="checkbox-text">@L["releaseGroups.friends"]</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" asp-for="ReleaseBusiness" />
+                    <span class="checkbox-text">@L["releaseGroups.business"]</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" asp-for="ReleaseLeisure" />
+                    <span class="checkbox-text">@L["releaseGroups.leisure"]</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="~/Contacts" class="btn-secondary">@L["common.cancel"]</a>
+            <button type="submit" class="btn-primary">@L["common.save"]</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-card {
+        background: var(--surface);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+    }
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    .form-hint {
+        margin: 0 0 0.5rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        transition: all 0.15s;
+    }
+    .checkbox-label:has(input:checked) {
+        background: rgba(37, 99, 235, 0.1);
+        border-color: var(--primary-color);
+    }
+    .checkbox-label input {
+        width: 1rem;
+        height: 1rem;
+        accent-color: var(--primary-color);
+    }
+    .checkbox-text {
+        font-size: 0.875rem;
+    }
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+    .validation-summary {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: var(--danger-color);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+    .validation-summary:empty {
+        display: none;
+    }
+    .validation-message {
+        color: var(--danger-color);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+</style>

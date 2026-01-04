@@ -44,35 +44,86 @@
     @if (Model.RecentShares.Any())
     {
         <div class="activity-list">
-            @foreach (var share in Model.RecentShares.Take(5))
+            @foreach (var share in Model.RecentShares.OrderByDescending(s => s.CreatedAt).Take(10))
             {
                 <div class="activity-item">
-                    <div class="avatar small">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                            <polyline points="16 6 12 2 8 6"/>
-                            <line x1="12" y1="2" x2="12" y2="15"/>
-                        </svg>
+                    <div class="activity-icon @(share.ViewCount > 0 ? "viewed" : "")">
+                        @if (share.ViewCount > 0)
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                                <polyline points="16 6 12 2 8 6"/>
+                                <line x1="12" y1="2" x2="12" y2="15"/>
+                            </svg>
+                        }
                     </div>
                     <div class="activity-content">
-                        <div class="activity-title">@share.Name</div>
-                        <div class="activity-meta">
-                            @share.ViewCount views &middot; @FormatDate(share.CreatedAt)
+                        <div class="activity-header">
+                            <span class="activity-title">@(string.IsNullOrEmpty(share.Name) ? L["home.unnamedShare"] : share.Name)</span>
+                            <span class="activity-time">@FormatDate(share.CreatedAt)</span>
+                        </div>
+                        <div class="activity-details">
+                            <span class="activity-stat">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                </svg>
+                                @share.ContactIds.Count @L["home.contacts"]
+                            </span>
+                            <span class="activity-stat">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                @share.ViewCount @L["home.views"]
+                            </span>
+                            @if (share.ExpiresAt.HasValue)
+                            {
+                                <span class="activity-stat @(share.ExpiresAt < DateTime.UtcNow ? "expired" : "")">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    @if (share.ExpiresAt < DateTime.UtcNow)
+                                    {
+                                        @L["home.expired"]
+                                    }
+                                    else
+                                    {
+                                        @FormatDate(share.ExpiresAt.Value)
+                                    }
+                                </span>
+                            }
                         </div>
                     </div>
+                    <a href="~/Shares" class="activity-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </a>
                 </div>
             }
         </div>
+        <a href="~/Shares" class="view-all-link">@L["home.viewAllShares"]</a>
     }
     else
     {
         <div class="empty-state">
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
             </svg>
             <h3>@L["home.noActivity"]</h3>
-            <p>@L["contacts.emptyHint"]</p>
+            <p>@L["home.noActivityHint"]</p>
+            <a href="~/Contacts" class="btn-primary">@L["home.createShare"]</a>
         </div>
     }
 </section>
@@ -87,3 +138,136 @@
         return date.ToString("dd.MM.yyyy");
     }
 }
+
+<style>
+    .home-section {
+        margin-bottom: 2rem;
+    }
+    .home-section h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        padding: 1rem;
+        background: var(--surface);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+    }
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--background);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+    .activity-icon.viewed {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success-color);
+    }
+    .activity-content {
+        flex: 1;
+        min-width: 0;
+    }
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.375rem;
+    }
+    .activity-title {
+        font-weight: 500;
+        font-size: 0.9375rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .activity-time {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+    .activity-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .activity-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .activity-stat.expired {
+        color: var(--danger-color);
+    }
+    .activity-link {
+        color: var(--text-muted);
+        padding: 0.25rem;
+    }
+    .activity-link:hover {
+        color: var(--primary-color);
+    }
+    .view-all-link {
+        display: block;
+        text-align: center;
+        padding: 0.75rem;
+        margin-top: 0.75rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    .view-all-link:hover {
+        text-decoration: underline;
+    }
+    .invitation-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .invitation-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--surface);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+    }
+    .invitation-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .invitation-name {
+        font-weight: 500;
+    }
+    .invitation-detail {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .invitation-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .avatar.small {
+        width: 36px;
+        height: 36px;
+        font-size: 0.875rem;
+    }
+</style>

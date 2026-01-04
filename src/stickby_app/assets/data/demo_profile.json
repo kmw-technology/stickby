@@ -1,0 +1,157 @@
+{
+  "id": "demo-user-nicolas",
+  "email": "nicolas.wild@googlemail.com",
+  "displayName": "Nicolas Wild",
+  "profileImageUrl": "assets/imgs/nw.jpg",
+  "bio": "Software Entwickler bei KMW. Liebt es, neue Rezepte auszuprobieren.",
+  "contactsByCategory": {
+    "General": [
+      {
+        "id": "nw-contact-001",
+        "type": 0,
+        "label": "Email",
+        "value": "nicolas.wild@googlemail.com",
+        "sortOrder": 0,
+        "releaseGroups": 15
+      },
+      {
+        "id": "nw-contact-002",
+        "type": 1,
+        "label": "Phone",
+        "value": "+498940038393",
+        "sortOrder": 1,
+        "releaseGroups": 15
+      }
+    ],
+    "Personal": [
+      {
+        "id": "nw-contact-003",
+        "type": 100,
+        "label": "Nationality",
+        "value": "Deutsch",
+        "sortOrder": 2,
+        "releaseGroups": 3
+      },
+      {
+        "id": "nw-contact-004",
+        "type": 101,
+        "label": "Marital Status",
+        "value": "Ledig",
+        "sortOrder": 3,
+        "releaseGroups": 1
+      },
+      {
+        "id": "nw-contact-005",
+        "type": 102,
+        "label": "Place of Birth",
+        "value": "Mannheim",
+        "sortOrder": 4,
+        "releaseGroups": 3
+      },
+      {
+        "id": "nw-contact-006",
+        "type": 103,
+        "label": "Education",
+        "value": "Master Information Systems",
+        "sortOrder": 5,
+        "releaseGroups": 12
+      },
+      {
+        "id": "nw-contact-007",
+        "type": 104,
+        "label": "Birthday",
+        "value": "16.01.1996",
+        "sortOrder": 6,
+        "releaseGroups": 3
+      }
+    ],
+    "Private": [
+      {
+        "id": "nw-contact-008",
+        "type": 200,
+        "label": "Mobile",
+        "value": "+49016012345678",
+        "sortOrder": 7,
+        "releaseGroups": 15
+      },
+      {
+        "id": "nw-contact-009",
+        "type": 2,
+        "label": "Address",
+        "value": "Dreierweg 45, 974839 Würzburg",
+        "sortOrder": 8,
+        "releaseGroups": 1
+      },
+      {
+        "id": "nw-contact-010",
+        "type": 201,
+        "label": "Emergency Contact",
+        "value": "+49 (0) 172 111 222 345",
+        "sortOrder": 9,
+        "releaseGroups": 1
+      }
+    ],
+    "Business": [
+      {
+        "id": "nw-contact-011",
+        "type": 300,
+        "label": "Company",
+        "value": "KMW",
+        "sortOrder": 10,
+        "releaseGroups": 4
+      },
+      {
+        "id": "nw-contact-012",
+        "type": 301,
+        "label": "Position",
+        "value": "Software Entwickler",
+        "sortOrder": 11,
+        "releaseGroups": 4
+      },
+      {
+        "id": "nw-contact-013",
+        "type": 302,
+        "label": "Business Email",
+        "value": "nicolas.wild@kmw.com",
+        "sortOrder": 12,
+        "releaseGroups": 4
+      }
+    ],
+    "Social": [
+      {
+        "id": "nw-contact-014",
+        "type": 402,
+        "label": "LinkedIn",
+        "value": "linkedin.com/in/nicolas-wild-500149186",
+        "sortOrder": 13,
+        "releaseGroups": 12
+      },
+      {
+        "id": "nw-contact-015",
+        "type": 406,
+        "label": "Xing",
+        "value": "xing.com/profile/Nicolas_Wild6",
+        "sortOrder": 14,
+        "releaseGroups": 4
+      }
+    ],
+    "Gaming": [
+      {
+        "id": "nw-contact-016",
+        "type": 500,
+        "label": "Steam",
+        "value": "Schnitzerl Schnetzler",
+        "sortOrder": 15,
+        "releaseGroups": 10
+      },
+      {
+        "id": "nw-contact-017",
+        "type": 501,
+        "label": "Battle.net",
+        "value": "Controller#249",
+        "sortOrder": 16,
+        "releaseGroups": 10
+      }
+    ]
+  }
+}

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
 import '../../models/share.dart';
 import '../../providers/shares_provider.dart';
 import '../../providers/contacts_provider.dart';
+import '../../providers/p2p_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_indicator.dart';
 import 'create_share_screen.dart';
+import 'p2p_share_screen.dart';
+import 'scan_share_screen.dart';
 
 class SharesScreen extends StatelessWidget {
   const SharesScreen({super.key});
@@ -15,14 +18,21 @@ class SharesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sharesProvider = context.watch<SharesProvider>();
+    final p2pProvider = context.watch<P2PProvider>();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Shares'),
         actions: [
+          if (p2pProvider.isPrivacyModeEnabled)
+            IconButton(
+              icon: const Icon(Icons.qr_code_scanner),
+              onPressed: () => _navigateToScanShare(context),
+              tooltip: 'Scan QR',
+            ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _navigateToCreateShare(context),
+            onPressed: () => _showCreateOptions(context, p2pProvider.isPrivacyModeEnabled),
             tooltip: 'Create Share',
           ),
         ],
@@ -203,6 +213,81 @@ class SharesScreen extends StatelessWidget {
     }
   }
 
+  void _showCreateOptions(BuildContext context, bool isP2PModeEnabled) {
+    if (!isP2PModeEnabled) {
+      _navigateToCreateShare(context);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.successLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.qr_code, color: AppColors.success),
+              ),
+              title: const Text('P2P Share (Recommended)'),
+              subtitle: const Text('Direct, encrypted, no server'),
+              onTap: () {
+                Navigator.pop(context);
+                _navigateToP2PShare(context);
+              },
+            ),
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.link, color: AppColors.primary),
+              ),
+              title: const Text('Link Share'),
+              subtitle: const Text('Via server (fallback)'),
+              onTap: () {
+                Navigator.pop(context);
+                _navigateToCreateShare(context);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToP2PShare(BuildContext context) {
+    final p2pProvider = context.read<P2PProvider>();
+    if (p2pProvider.localContacts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Add some local contacts first before creating a P2P share'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const P2PShareScreen()),
+    );
+  }
+
+  void _navigateToScanShare(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ScanShareScreen()),
+    );
+  }
+
   void _navigateToCreateShare(BuildContext context) {
     final contacts = context.read<ContactsProvider>().contacts;
     if (contacts.isEmpty) {
@@ -220,7 +305,7 @@ class SharesScreen extends StatelessWidget {
   }
 
   void _shareLink(BuildContext context, Share share) {
-    Share.share(
+    share_plus.Share.share(
       'Check out my contact info: ${share.shareUrl}',
       subject: 'StickBy Contact Share',
     );

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/demo_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
+import '../../widgets/gradient_button.dart';
+import '../demo/demo_sync_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -30,19 +32,57 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.login(
-      _emailController.text.trim(),
-      _passwordController.text,
+
+    try {
+      final success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (!success && mounted) {
+        // Get error message, cleaning up common prefixes
+        String errorMsg = authProvider.errorMessage ?? 'Login failed. Please check your credentials.';
+        // Clean up exception prefixes for better display
+        errorMsg = errorMsg.replaceAll('ApiException: ', '');
+        errorMsg = errorMsg.replaceAll('Exception: ', '');
+        if (errorMsg.isEmpty || errorMsg == 'An error occurred') {
+          errorMsg = 'Login failed. Please check your email and password.';
+        }
+        _showError(errorMsg);
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMsg = e.toString();
+        if (errorMsg.contains('SocketException') || errorMsg.contains('ClientException')) {
+          errorMsg = 'Network error. Please check your internet connection.';
+        } else if (errorMsg.contains('TimeoutException')) {
+          errorMsg = 'Connection timed out. Please try again.';
+        }
+        _showError(errorMsg);
+      }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.danger,
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
+  }
+
+  Future<void> _handleDemoMode() async {
+    final demoProvider = context.read<DemoProvider>();
+
+    final success = await demoProvider.enableDemoMode();
 
     if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Login failed'),
-          backgroundColor: AppColors.danger,
-        ),
-      );
+      _showError(demoProvider.errorMessage ?? 'Failed to start demo mode');
     }
+    // If successful, the app.dart will automatically navigate to MainScreen
   }
 
   @override
@@ -63,18 +103,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Logo / Title
-                    Icon(
-                      Icons.share_outlined,
-                      size: 64,
-                      color: AppColors.primary,
+                    Image.asset(
+                      'assets/stickby_logo.png',
+                      width: 100,
+                      height: 100,
                     ),
                     const SizedBox(height: 16),
+                    // BungeeShade branded title
                     Text(
                       'StickBy',
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.displaySmall,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
@@ -145,17 +183,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
 
                     // Login button
-                    AppButton(
+                    GradientButton(
                       label: 'Sign In',
                       onPressed: _handleLogin,
                       isLoading: authProvider.isLoading,
                       isFullWidth: true,
+                      icon: Icons.login,
                     ),
                     const SizedBox(height: 16),
 
                     // Register link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           "Don't have an account? ",
@@ -172,6 +212,60 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: const Text('Sign Up'),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Demo mode buttons
+                    Text(
+                      'Want to try StickBy first?',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    // Quick solo demo
+                    Consumer<DemoProvider>(
+                      builder: (context, demoProvider, child) {
+                        return OutlinedButton.icon(
+                          onPressed: demoProvider.isLoading ? null : _handleDemoMode,
+                          icon: demoProvider.isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.play_circle_outline),
+                          label: Text(demoProvider.isLoading ? 'Loading Demo...' : 'Quick Demo'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.secondary,
+                            side: BorderSide(color: AppColors.secondary),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    // Multi-device sync demo
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const DemoSyncScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.devices, size: 18),
+                      label: const Text('Multi-Device Demo (Sync)'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),

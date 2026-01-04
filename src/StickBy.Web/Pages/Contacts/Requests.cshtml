@@ -1,0 +1,142 @@
+@page
+@model StickBy.Web.Pages.Contacts.RequestsModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["requests.title"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["requests.title"]</h1>
+    <a href="~/Contacts" class="btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        @L["common.back"]
+    </a>
+</div>
+
+@if (!Model.PendingInvitations.Any())
+{
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <h3>@L["requests.empty"]</h3>
+        <p>@L["requests.emptyHint"]</p>
+    </div>
+}
+else
+{
+    <div class="requests-list">
+        @foreach (var invitation in Model.PendingInvitations)
+        {
+            <div class="request-card">
+                <div class="request-info">
+                    <div class="request-avatar">
+                        @(invitation.Name?.Substring(0, Math.Min(2, invitation.Name?.Length ?? 0)).ToUpper() ?? "GR")
+                    </div>
+                    <div class="request-details">
+                        <h3 class="request-name">@invitation.Name</h3>
+                        @if (!string.IsNullOrEmpty(invitation.Description))
+                        {
+                            <p class="request-description">@invitation.Description</p>
+                        }
+                        <span class="request-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                            </svg>
+                            @invitation.MemberCount @L["groups.members"]
+                        </span>
+                    </div>
+                </div>
+                <div class="request-actions">
+                    <form method="post" asp-page-handler="Accept" asp-route-id="@invitation.Id" style="display:inline">
+                        <button type="submit" class="btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            @L["requests.accept"]
+                        </button>
+                    </form>
+                    <form method="post" asp-page-handler="Decline" asp-route-id="@invitation.Id" style="display:inline">
+                        <button type="submit" class="btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            @L["requests.decline"]
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .requests-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .request-card {
+        background: var(--surface);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .request-info {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+    .request-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .request-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .request-name {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    .request-description {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+    .request-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .request-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .request-actions button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+</style>

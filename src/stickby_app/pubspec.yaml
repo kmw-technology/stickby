@@ -1,7 +1,7 @@
 name: stickby_app
-description: StickBy - Contact sharing made easy.
+description: StickBy - Self-Sovereign Identity Contact Platform.
 publish_to: 'none'
-version: 1.0.0+1
+version: 2.0.0+5
 
 environment:
   sdk: ^3.5.0
@@ -15,9 +15,21 @@ dependencies:
 
   # HTTP & API
   http: ^1.2.0
+  http_parser: ^4.0.2
 
   # Secure Storage
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^10.0.0
+
+  # Cryptography (P2P Privacy Mode / SSI)
+  cryptography: ^2.7.0
+  bip39: ^1.0.6
+
+  # Local Database (encrypted)
+  sqflite_sqlcipher: ^3.1.0+1
+  path: ^1.9.0
+
+  # UUID generation
+  uuid: ^4.2.1
 
   # UI Components
   google_fonts: ^6.1.0
@@ -27,25 +39,37 @@ dependencies:
   qr_flutter: ^4.1.0
   mobile_scanner: ^3.5.6
 
+  # ML & AI (Business Card Scanner)
+  google_mlkit_text_recognition: ^0.11.0
+
+  # SignalR (Real-time sync)
+  signalr_netcore: ^1.3.7
+
   # Utils
   intl: ^0.19.0
   url_launcher: ^6.2.2
   share_plus: ^7.2.1
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
   flutter_lints: ^3.0.1
   flutter_launcher_icons: ^0.13.1
 
 flutter_launcher_icons:
   android: true
-  ios: true
+  ios: false
   image_path: "assets/icon/app_icon.png"
-  adaptive_icon_background: "#2563eb"
+  adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
 
 flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+    - assets/stickby_logo.png
+    - assets/data/
+    - assets/imgs/

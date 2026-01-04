@@ -51,4 +51,17 @@ app.MapRazorComponents<App>()
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
+// APK Download endpoint - streams file directly to browser
+app.MapGet("/api/apk-download/{id:guid}", async (Guid id, StickByDbContext db) =>
+{
+    var release = await db.ApkReleases.FindAsync(id);
+    if (release == null || release.FileData == null)
+        return Results.NotFound();
+
+    return Results.File(
+        release.FileData,
+        "application/vnd.android.package-archive",
+        release.FileName);
+});
+
 app.Run();

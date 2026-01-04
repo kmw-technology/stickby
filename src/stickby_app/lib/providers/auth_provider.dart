@@ -7,6 +7,7 @@ enum AuthStatus {
   initial,
   loading,
   authenticated,
+  needsOnboarding,
   unauthenticated,
   error,
 }
@@ -45,7 +46,10 @@ class AuthProvider with ChangeNotifier {
       final authResponse = await _apiService.refreshToken();
       if (authResponse != null) {
         _user = authResponse.user;
-        _status = AuthStatus.authenticated;
+
+        // Check if onboarding is completed
+        final onboardingCompleted = await _storageService.isOnboardingCompleted();
+        _status = onboardingCompleted ? AuthStatus.authenticated : AuthStatus.needsOnboarding;
       } else {
         _status = AuthStatus.unauthenticated;
       }
@@ -64,7 +68,10 @@ class AuthProvider with ChangeNotifier {
     try {
       final authResponse = await _apiService.login(email, password);
       _user = authResponse.user;
-      _status = AuthStatus.authenticated;
+
+      // Check if onboarding is completed
+      final onboardingCompleted = await _storageService.isOnboardingCompleted();
+      _status = onboardingCompleted ? AuthStatus.authenticated : AuthStatus.needsOnboarding;
       notifyListeners();
       return true;
     } catch (e) {
@@ -83,7 +90,8 @@ class AuthProvider with ChangeNotifier {
     try {
       final authResponse = await _apiService.register(email, password, displayName);
       _user = authResponse.user;
-      _status = AuthStatus.authenticated;
+      // New users always need onboarding
+      _status = AuthStatus.needsOnboarding;
       notifyListeners();
       return true;
     } catch (e) {
@@ -105,6 +113,12 @@ class AuthProvider with ChangeNotifier {
       _status = AuthStatus.unauthenticated;
       notifyListeners();
     }
+  }
+
+  Future<void> completeOnboarding() async {
+    await _storageService.setOnboardingCompleted(true);
+    _status = AuthStatus.authenticated;
+    notifyListeners();
   }
 
   void clearError() {

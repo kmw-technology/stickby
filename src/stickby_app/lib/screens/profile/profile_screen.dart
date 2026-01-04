@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/demo_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/avatar.dart';
@@ -8,6 +9,7 @@ import '../../widgets/contact_tile.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_indicator.dart';
 import 'edit_profile_screen.dart';
+import 'release_groups_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -16,11 +18,13 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final profileProvider = context.watch<ProfileProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final demoProvider = context.watch<DemoProvider>();
     final profile = profileProvider.profile;
+    final isDemo = demoProvider.isDemoMode;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(isDemo ? 'Profile (Demo)' : 'Profile'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -29,11 +33,18 @@ class ProfileScreen extends StatelessWidget {
                 : null,
             tooltip: 'Edit Profile',
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => authProvider.logout(),
-            tooltip: 'Logout',
-          ),
+          if (isDemo)
+            IconButton(
+              icon: const Icon(Icons.exit_to_app),
+              onPressed: () => _showExitDemoDialog(context),
+              tooltip: 'Exit Demo Mode',
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => authProvider.logout(),
+              tooltip: 'Logout',
+            ),
         ],
       ),
       body: profileProvider.isLoading
@@ -78,6 +89,19 @@ class ProfileScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                         ],
+                        const SizedBox(height: 24),
+
+                        // Action buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.tune),
+                              label: const Text('Release Groups'),
+                              onPressed: () => _navigateToReleaseGroups(context),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 32),
 
                         // Contacts by category
@@ -131,6 +155,42 @@ class ProfileScreen extends StatelessWidget {
   void _navigateToEditProfile(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+    );
+  }
+
+  void _navigateToReleaseGroups(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ReleaseGroupsScreen()),
+    );
+  }
+
+  void _showExitDemoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit Demo Mode?'),
+        content: const Text(
+          'You will be returned to the login screen. '
+          'All demo data will be cleared.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await context.read<DemoProvider>().disableDemoMode();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Exit Demo'),
+          ),
+        ],
+      ),
     );
   }
 }

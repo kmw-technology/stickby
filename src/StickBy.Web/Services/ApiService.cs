@@ -18,6 +18,7 @@ public interface IApiService
     void ClearAccessToken();
 
     Task<List<ContactDto>> GetContactsAsync();
+    Task<ContactDto?> GetContactAsync(Guid id);
     Task<ContactDto?> CreateContactAsync(CreateContactRequest request);
     Task<ContactDto?> UpdateContactAsync(Guid id, UpdateContactRequest request);
     Task<bool> DeleteContactAsync(Guid id);
@@ -33,9 +34,11 @@ public interface IApiService
     Task<bool> JoinGroupAsync(Guid groupId);
     Task<bool> DeclineInvitationAsync(Guid groupId);
     Task<bool> LeaveGroupAsync(Guid groupId);
+    Task<bool> InviteToGroupAsync(Guid groupId, string email);
 
     Task<ProfileDto?> GetProfileAsync();
     Task<ProfileDto?> UpdateProfileAsync(UpdateProfileRequest request);
+    Task<bool> UpdateProfileImageAsync(string imageUrl);
     Task<bool> UpdateReleaseGroupsAsync(List<UpdateReleaseGroupsRequest> updates);
 
     Task<List<CompanyDto>> GetCompaniesAsync(bool? isContractor = null);
@@ -176,6 +179,11 @@ public class ApiService : IApiService
         return await GetAsync<List<ContactDto>>("api/contacts") ?? new List<ContactDto>();
     }
 
+    public async Task<ContactDto?> GetContactAsync(Guid id)
+    {
+        return await GetAsync<ContactDto>($"api/contacts/{id}");
+    }
+
     public async Task<ContactDto?> CreateContactAsync(CreateContactRequest request)
     {
         return await PostAsync<CreateContactRequest, ContactDto>("api/contacts", request);
@@ -243,6 +251,11 @@ public class ApiService : IApiService
         return await PostAsync<object>($"api/groups/{groupId}/leave");
     }
 
+    public async Task<bool> InviteToGroupAsync(Guid groupId, string email)
+    {
+        return await PostAsync($"api/groups/{groupId}/invite", new { Email = email });
+    }
+
     // Profile
     public async Task<ProfileDto?> GetProfileAsync()
     {
@@ -252,6 +265,11 @@ public class ApiService : IApiService
     public async Task<ProfileDto?> UpdateProfileAsync(UpdateProfileRequest request)
     {
         return await PutAsync<UpdateProfileRequest, ProfileDto>("api/profile", request);
+    }
+
+    public async Task<bool> UpdateProfileImageAsync(string imageUrl)
+    {
+        return await PutAsync("api/profile/image", new { ImageUrl = imageUrl });
     }
 
     public async Task<bool> UpdateReleaseGroupsAsync(List<UpdateReleaseGroupsRequest> updates)

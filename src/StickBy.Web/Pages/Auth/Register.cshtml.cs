@@ -67,6 +67,6 @@ public class RegisterModel : PageModel
 
         await HttpContext.SignInAsync("Cookies", principal);
 
-        return RedirectToPage("/Home");
+        return RedirectToPage("/Onboarding/Welcome");
     }
 }

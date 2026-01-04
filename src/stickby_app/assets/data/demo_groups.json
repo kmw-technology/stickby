@@ -1,0 +1,29 @@
+[
+  {
+    "id": "demo-group-001",
+    "name": "Studiengruppe",
+    "description": "Studiengruppe FK03 der Fakultät Maschinenbau WS2022",
+    "memberCount": 36,
+    "role": "member",
+    "status": "accepted",
+    "createdAt": "2022-10-03T10:00:00Z"
+  },
+  {
+    "id": "demo-group-002",
+    "name": "FK03 Mechanik WS22 Prof. Fritsch",
+    "description": "Mechanik Vorlesung im WS 22 bei Prof. Dr. Fritsch",
+    "memberCount": 47,
+    "role": "member",
+    "status": "accepted",
+    "createdAt": "2022-10-10T09:00:00Z"
+  },
+  {
+    "id": "demo-group-003",
+    "name": "KMW Entwickler Team",
+    "description": "Software Entwicklungsteam bei KMW",
+    "memberCount": 12,
+    "role": "member",
+    "status": "accepted",
+    "createdAt": "2023-03-15T08:00:00Z"
+  }
+]

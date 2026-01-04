@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/contacts_provider.dart';
+import '../providers/demo_provider.dart';
 import '../providers/groups_provider.dart';
 import '../providers/shares_provider.dart';
 import '../providers/profile_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/demo_mode_banner.dart';
 import 'home/home_screen.dart';
 import 'contacts/contacts_screen.dart';
 import 'groups/groups_screen.dart';
 import 'profile/profile_screen.dart';
 import 'shares/shares_screen.dart';
+import 'companies/companies_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -27,6 +30,7 @@ class _MainScreenState extends State<MainScreen> {
     ContactsScreen(),
     SharesScreen(),
     GroupsScreen(),
+    CompaniesScreen(),
     ProfileScreen(),
   ];
 
@@ -37,7 +41,14 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _loadInitialData() async {
-    // Load data for all screens
+    final demoProvider = context.read<DemoProvider>();
+
+    // Skip API calls in demo mode - data is loaded from DemoService
+    if (demoProvider.isDemoMode) {
+      return;
+    }
+
+    // Load data for all screens from API
     final contactsProvider = context.read<ContactsProvider>();
     final groupsProvider = context.read<GroupsProvider>();
     final sharesProvider = context.read<SharesProvider>();
@@ -55,13 +66,15 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final groupsProvider = context.watch<GroupsProvider>();
+    final demoProvider = context.watch<DemoProvider>();
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: Container(
+    return DemoModeBanner(
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
@@ -104,12 +117,18 @@ class _MainScreenState extends State<MainScreen> {
               label: 'Groups',
             ),
             const BottomNavigationBarItem(
+              icon: Icon(Icons.business_outlined),
+              activeIcon: Icon(Icons.business),
+              label: 'Companies',
+            ),
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outlined),
               activeIcon: Icon(Icons.person),
               label: 'Profile',
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -1,0 +1,112 @@
+@page
+@model StickBy.Web.Pages.Groups.CreateModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["groups.create"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["groups.create"]</h1>
+    <a href="~/Groups" class="btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        @L["common.back"]
+    </a>
+</div>
+
+<div class="form-card">
+    <form method="post">
+        <div asp-validation-summary="All" class="validation-summary"></div>
+
+        <div class="form-group">
+            <label asp-for="Name" class="form-label">@L["groups.name"]</label>
+            <input asp-for="Name" class="form-control" placeholder="@L["groups.namePlaceholder"]" />
+            <span asp-validation-for="Name" class="validation-message"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description" class="form-label">@L["groups.description"]</label>
+            <textarea asp-for="Description" class="form-control" rows="3" placeholder="@L["groups.descriptionPlaceholder"]"></textarea>
+            <span asp-validation-for="Description" class="validation-message"></span>
+        </div>
+
+        <div class="form-actions">
+            <a href="~/Groups" class="btn-secondary">@L["common.cancel"]</a>
+            <button type="submit" class="btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                @L["groups.createButton"]
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-card {
+        background: var(--surface);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+    }
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+    .form-actions .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .validation-summary {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: var(--danger-color);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+    .validation-summary:empty {
+        display: none;
+    }
+    .validation-message {
+        color: var(--danger-color);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+</style>

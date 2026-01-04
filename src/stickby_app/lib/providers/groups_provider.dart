@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import '../models/group.dart';
 import '../services/api_service.dart';
+import '../services/demo_service.dart';
 
 class GroupsProvider with ChangeNotifier {
   final ApiService _apiService;
+  final DemoService _demoService = DemoService();
 
   List<Group> _groups = [];
   List<Group> _invitations = [];
@@ -13,13 +15,26 @@ class GroupsProvider with ChangeNotifier {
   GroupsProvider({ApiService? apiService})
       : _apiService = apiService ?? ApiService();
 
-  List<Group> get groups => _groups.where((g) => g.isActive).toList();
-  List<Group> get invitations => _invitations;
+  /// Returns groups - from demo service if in demo mode.
+  List<Group> get groups => _demoService.isEnabled
+      ? _demoService.demoGroups.where((g) => g.isActive).toList()
+      : _groups.where((g) => g.isActive).toList();
+
+  /// Returns invitations - from demo service if in demo mode.
+  List<Group> get invitations => _demoService.isEnabled
+      ? _demoService.demoInvitations
+      : _invitations;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  int get pendingInvitationsCount => _invitations.length;
+  int get pendingInvitationsCount => invitations.length;
 
   Future<void> loadGroups() async {
+    // Skip API call in demo mode
+    if (_demoService.isEnabled) {
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -35,6 +50,12 @@ class GroupsProvider with ChangeNotifier {
   }
 
   Future<void> loadInvitations() async {
+    // Skip API call in demo mode
+    if (_demoService.isEnabled) {
+      notifyListeners();
+      return;
+    }
+
     try {
       _invitations = await _apiService.getGroupInvitations();
       notifyListeners();
@@ -79,6 +100,13 @@ class GroupsProvider with ChangeNotifier {
   }
 
   Future<bool> joinGroup(String id) async {
+    // Demo mode - accept invitation
+    if (_demoService.isEnabled) {
+      _demoService.acceptDemoInvitation(id);
+      notifyListeners();
+      return true;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -103,6 +131,13 @@ class GroupsProvider with ChangeNotifier {
   }
 
   Future<bool> declineGroup(String id) async {
+    // Demo mode - decline invitation
+    if (_demoService.isEnabled) {
+      _demoService.declineDemoInvitation(id);
+      notifyListeners();
+      return true;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

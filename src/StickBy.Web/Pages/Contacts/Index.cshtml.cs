@@ -20,6 +20,8 @@ public class IndexModel : PageModel
     }
 
     public List<ContactDto> Contacts { get; set; } = new();
+    public int PendingRequestsCount { get; set; }
+
     public IEnumerable<IGrouping<string, ContactDto>> GroupedContacts => Contacts
         .Where(c => string.IsNullOrEmpty(SearchQuery) ||
             c.Label.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
@@ -32,7 +34,13 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
-        Contacts = await _apiService.GetContactsAsync();
+        var contactsTask = _apiService.GetContactsAsync();
+        var invitationsTask = _apiService.GetPendingInvitationsAsync();
+
+        await Task.WhenAll(contactsTask, invitationsTask);
+
+        Contacts = contactsTask.Result;
+        PendingRequestsCount = invitationsTask.Result.Count;
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(Guid id)

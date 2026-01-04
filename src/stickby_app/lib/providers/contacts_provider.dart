@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import '../models/contact.dart';
 import '../services/api_service.dart';
+import '../services/demo_service.dart';
 
 class ContactsProvider with ChangeNotifier {
   final ApiService _apiService;
+  final DemoService _demoService = DemoService();
 
   List<Contact> _contacts = [];
   bool _isLoading = false;
@@ -12,13 +14,16 @@ class ContactsProvider with ChangeNotifier {
   ContactsProvider({ApiService? apiService})
       : _apiService = apiService ?? ApiService();
 
-  List<Contact> get contacts => _contacts;
+  /// Returns contacts - from demo service if in demo mode, otherwise from API cache.
+  List<Contact> get contacts => _demoService.isEnabled
+      ? _demoService.allDemoContacts
+      : _contacts;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
   Map<String, List<Contact>> get contactsByCategory {
     final map = <String, List<Contact>>{};
-    for (final contact in _contacts) {
+    for (final contact in contacts) {
       final category = contact.type.category;
       map.putIfAbsent(category, () => []).add(contact);
     }
@@ -26,6 +31,12 @@ class ContactsProvider with ChangeNotifier {
   }
 
   Future<void> loadContacts() async {
+    // Skip API call in demo mode - data comes from DemoService
+    if (_demoService.isEnabled) {
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -47,6 +58,18 @@ class ContactsProvider with ChangeNotifier {
     required String value,
     int releaseGroups = 15,
   }) async {
+    // Demo mode - add to demo data
+    if (_demoService.isEnabled) {
+      _demoService.addDemoContact(
+        type: type,
+        label: label,
+        value: value,
+        releaseGroups: releaseGroups,
+      );
+      notifyListeners();
+      return true;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -111,6 +134,13 @@ class ContactsProvider with ChangeNotifier {
   }
 
   Future<bool> deleteContact(String id) async {
+    // Demo mode - delete from demo data
+    if (_demoService.isEnabled) {
+      _demoService.deleteDemoContact(id);
+      notifyListeners();
+      return true;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

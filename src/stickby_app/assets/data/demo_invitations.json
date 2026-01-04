@@ -1,0 +1,20 @@
+[
+  {
+    "id": "demo-group-inv-001",
+    "name": "Fotografie Enthusiasten",
+    "description": "Gruppe für Hobby-Fotografen zum Austausch von Tipps und Bildern",
+    "memberCount": 24,
+    "role": "member",
+    "status": "pending",
+    "createdAt": "2024-12-28T14:00:00Z"
+  },
+  {
+    "id": "demo-group-inv-002",
+    "name": "München Läufer",
+    "description": "Laufgruppe für morgendliche Runs im Englischen Garten",
+    "memberCount": 15,
+    "role": "member",
+    "status": "pending",
+    "createdAt": "2024-12-30T08:00:00Z"
+  }
+]

@@ -1,0 +1,144 @@
+@page
+@model StickBy.Web.Pages.Onboarding.WelcomeModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["onboarding.welcome"];
+    Layout = "_LayoutMinimal";
+}
+
+<div class="onboarding-container">
+    <div class="onboarding-card">
+        <div class="onboarding-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+
+        <h1 class="onboarding-title">@L["onboarding.welcomeTitle"]</h1>
+        <p class="onboarding-subtitle">@string.Format(L["onboarding.welcomeMessage"], Model.DisplayName)</p>
+
+        <div class="onboarding-features">
+            <div class="feature-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>@L["onboarding.feature1"]</span>
+            </div>
+            <div class="feature-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>@L["onboarding.feature2"]</span>
+            </div>
+            <div class="feature-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>@L["onboarding.feature3"]</span>
+            </div>
+        </div>
+
+        <form method="post">
+            <button type="submit" class="btn-primary btn-full">
+                @L["onboarding.getStarted"]
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                </svg>
+            </button>
+        </form>
+    </div>
+
+    <div class="onboarding-progress">
+        <span class="progress-dot active"></span>
+        <span class="progress-dot"></span>
+    </div>
+</div>
+
+<style>
+    .onboarding-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: var(--background);
+    }
+    .onboarding-card {
+        background: var(--surface);
+        border-radius: 1rem;
+        padding: 2.5rem;
+        max-width: 420px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .onboarding-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+    }
+    .onboarding-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    .onboarding-subtitle {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+    .onboarding-features {
+        text-align: left;
+        margin-bottom: 2rem;
+    }
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+    }
+    .feature-item svg {
+        color: var(--success-color);
+        flex-shrink: 0;
+    }
+    .btn-full {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+    .onboarding-progress {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .progress-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+    }
+    .progress-dot.active {
+        background: var(--primary-color);
+        width: 24px;
+        border-radius: 4px;
+    }
+</style>

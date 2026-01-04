@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import '../config/api_config.dart';
 import '../models/auth_response.dart';
+import '../models/company.dart';
 import '../models/contact.dart';
 import '../models/group.dart';
 import '../models/profile.dart';
@@ -337,6 +340,77 @@ class ApiService {
     await _put('${ApiConfig.profile}/release-groups/bulk', {
       'updates': updates,
     });
+  }
+
+  Future<String?> uploadProfileImage(File imageFile) async {
+    final token = await _storage.getAccessToken();
+    final request = http.MultipartRequest(
+      'PUT',
+      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.profileImage}'),
+    );
+
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    final extension = imageFile.path.split('.').last.toLowerCase();
+    final mimeType = _getMimeType(extension);
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: MediaType.parse(mimeType),
+      ),
+    );
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isNotEmpty) {
+        final data = jsonDecode(response.body);
+        return data['imageUrl'] as String?;
+      }
+      return null;
+    }
+
+    String message = 'Failed to upload image';
+    try {
+      final body = jsonDecode(response.body);
+      message = body['message'] ?? message;
+    } catch (_) {}
+
+    throw ApiException(message, statusCode: response.statusCode);
+  }
+
+  String _getMimeType(String extension) {
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
+    }
+  }
+
+  // Company methods
+  Future<Company> getCompany(String id) async {
+    final data = await _get('${ApiConfig.companies}/$id');
+    return Company.fromJson(data);
+  }
+
+  Future<List<Company>> getCompanies() async {
+    final data = await _get(ApiConfig.companies);
+    return (data as List<dynamic>)
+        .map((e) => Company.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   // Health check

@@ -1,0 +1,298 @@
+@page
+@model StickBy.Web.Pages.Contacts.AssignGroupsModel
+@inject ILocalizationService L
+@using StickBy.Shared.Enums
+@{
+    ViewData["Title"] = L["assignGroups.title"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["assignGroups.title"]</h1>
+    <a href="~/Contacts" class="btn-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        @L["common.back"]
+    </a>
+</div>
+
+<p class="page-description">@L["assignGroups.description"]</p>
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        @Model.SuccessMessage
+    </div>
+}
+
+@if (!Model.Contacts.Any())
+{
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+        </svg>
+        <h3>@L["releaseGroups.noContacts"]</h3>
+        <p>@L["releaseGroups.addContactsFirst"]</p>
+        <a href="~/Contacts/Create" class="btn-primary">@L["contacts.add"]</a>
+    </div>
+}
+else
+{
+    <form method="post">
+        <div class="assign-controls">
+            <div class="control-group">
+                <label class="control-label">@L["assignGroups.action"]</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="Action" value="add" checked="@(Model.Action == "add")" />
+                        <span class="radio-text">@L["assignGroups.addToGroup"]</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="Action" value="remove" checked="@(Model.Action == "remove")" />
+                        <span class="radio-text">@L["assignGroups.removeFromGroup"]</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">@L["assignGroups.targetGroup"]</label>
+                <select name="TargetGroup" class="form-control group-select">
+                    <option value="@((int)ReleaseGroup.Family)">@L["releaseGroups.family"]</option>
+                    <option value="@((int)ReleaseGroup.Friends)">@L["releaseGroups.friends"]</option>
+                    <option value="@((int)ReleaseGroup.Business)">@L["releaseGroups.business"]</option>
+                    <option value="@((int)ReleaseGroup.Leisure)">@L["releaseGroups.leisure"]</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="selection-actions">
+            <button type="button" class="btn-text" onclick="selectAll()">@L["assignGroups.selectAll"]</button>
+            <button type="button" class="btn-text" onclick="deselectAll()">@L["assignGroups.deselectAll"]</button>
+            <span class="selected-count"><span id="selectedCount">0</span> @L["assignGroups.selected"]</span>
+        </div>
+
+        <div class="contact-list">
+            @foreach (var contact in Model.Contacts.OrderBy(c => c.Label))
+            {
+                <label class="contact-item">
+                    <input type="checkbox"
+                           name="SelectedContactIds"
+                           value="@contact.Id"
+                           onchange="updateCount()" />
+                    <div class="contact-info">
+                        <span class="contact-label">@contact.Label</span>
+                        <span class="contact-value">@contact.Value</span>
+                    </div>
+                    <div class="contact-groups">
+                        @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Family))
+                        {
+                            <span class="group-badge" title="@L["releaseGroups.family"]">F</span>
+                        }
+                        @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Friends))
+                        {
+                            <span class="group-badge" title="@L["releaseGroups.friends"]">Fr</span>
+                        }
+                        @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Business))
+                        {
+                            <span class="group-badge" title="@L["releaseGroups.business"]">B</span>
+                        }
+                        @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Leisure))
+                        {
+                            <span class="group-badge" title="@L["releaseGroups.leisure"]">L</span>
+                        }
+                    </div>
+                </label>
+            }
+        </div>
+
+        <div class="form-actions-sticky">
+            <button type="submit" class="btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                @L["assignGroups.apply"]
+            </button>
+        </div>
+    </form>
+}
+
+<script>
+function selectAll() {
+    document.querySelectorAll('.contact-item input[type="checkbox"]').forEach(cb => cb.checked = true);
+    updateCount();
+}
+
+function deselectAll() {
+    document.querySelectorAll('.contact-item input[type="checkbox"]').forEach(cb => cb.checked = false);
+    updateCount();
+}
+
+function updateCount() {
+    const count = document.querySelectorAll('.contact-item input[type="checkbox"]:checked').length;
+    document.getElementById('selectedCount').textContent = count;
+}
+</script>
+
+<style>
+    .page-description {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+    .alert-success {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        color: var(--success-color);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .assign-controls {
+        background: var(--surface);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    .control-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    .control-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .radio-group {
+        display: flex;
+        gap: 1rem;
+    }
+    .radio-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+    .radio-label input {
+        accent-color: var(--primary-color);
+    }
+    .radio-text {
+        font-size: 0.875rem;
+    }
+    .group-select {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        min-width: 150px;
+    }
+    .selection-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+        padding: 0 0.25rem;
+    }
+    .btn-text {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        font-size: 0.875rem;
+        cursor: pointer;
+        padding: 0.25rem;
+    }
+    .btn-text:hover {
+        text-decoration: underline;
+    }
+    .selected-count {
+        margin-left: auto;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+    .contact-list {
+        background: var(--surface);
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.875rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .contact-item:last-child {
+        border-bottom: none;
+    }
+    .contact-item:hover {
+        background: var(--background);
+    }
+    .contact-item input[type="checkbox"] {
+        width: 1.125rem;
+        height: 1.125rem;
+        accent-color: var(--primary-color);
+    }
+    .contact-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+    .contact-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .contact-value {
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+    .contact-groups {
+        display: flex;
+        gap: 0.25rem;
+    }
+    .group-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        font-size: 0.625rem;
+        font-weight: 600;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 4px;
+    }
+    .form-actions-sticky {
+        position: sticky;
+        bottom: 80px;
+        background: var(--background);
+        padding: 1rem 0;
+        display: flex;
+        justify-content: center;
+        border-top: 1px solid var(--border);
+        margin-top: 1rem;
+    }
+    .form-actions-sticky .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+</style>

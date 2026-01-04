@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StickBy.Api.Hubs;
 using StickBy.Api.Services;
 using StickBy.Infrastructure.Data;
 using StickBy.Infrastructure.Entities;
@@ -61,6 +62,13 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IApkService, ApkService>();
 
+// Demo Sync Services (in-memory)
+builder.Services.AddSingleton<IDemoSessionService, DemoSessionService>();
+builder.Services.AddHostedService<DemoSessionCleanupService>();
+
+// SignalR for real-time demo sync
+builder.Services.AddSignalR();
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -99,6 +107,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SignalR hub for demo synchronization
+app.MapHub<DemoSyncHub>("/hubs/demosync");
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));

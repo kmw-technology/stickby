@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import '../models/share.dart';
 import '../services/api_service.dart';
+import '../services/demo_service.dart';
 
 class SharesProvider with ChangeNotifier {
   final ApiService _apiService;
+  final DemoService _demoService = DemoService();
 
   List<Share> _shares = [];
   bool _isLoading = false;
@@ -12,14 +14,23 @@ class SharesProvider with ChangeNotifier {
   SharesProvider({ApiService? apiService})
       : _apiService = apiService ?? ApiService();
 
-  List<Share> get shares => _shares;
+  /// Returns shares - from demo service if in demo mode.
+  List<Share> get shares => _demoService.isEnabled
+      ? _demoService.demoShares
+      : _shares;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  int get totalViewCount => _shares.fold(0, (sum, share) => sum + share.viewCount);
-  List<Share> get recentShares => _shares.take(5).toList();
+  int get totalViewCount => shares.fold(0, (sum, share) => sum + share.viewCount);
+  List<Share> get recentShares => shares.take(5).toList();
 
   Future<void> loadShares() async {
+    // Skip API call in demo mode
+    if (_demoService.isEnabled) {
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -40,6 +51,18 @@ class SharesProvider with ChangeNotifier {
     String? name,
     DateTime? expiresAt,
   }) async {
+    // Demo mode - create demo share
+    if (_demoService.isEnabled) {
+      final share = _demoService.createDemoShare(
+        name: name,
+        contactIds: contactIds,
+        releaseGroups: 15, // All groups in demo mode
+        expiresAt: expiresAt,
+      );
+      notifyListeners();
+      return share;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -63,6 +86,13 @@ class SharesProvider with ChangeNotifier {
   }
 
   Future<bool> deleteShare(String id) async {
+    // Demo mode - delete demo share
+    if (_demoService.isEnabled) {
+      _demoService.deleteDemoShare(id);
+      notifyListeners();
+      return true;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

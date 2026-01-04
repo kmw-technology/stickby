@@ -20,6 +20,7 @@ public interface IAdminService
     Task<List<ApkSummary>> GetApkReleasesAsync();
     Task<ApkSummary> UploadApkAsync(string version, string fileName, byte[] fileData, string? releaseNotes);
     Task<byte[]?> GetApkFileAsync(Guid id);
+    Task<string?> GetApkDownloadUrlAsync(Guid id);
     Task<bool> DeleteApkAsync(Guid id);
     Task<bool> SetApkAsLatestAsync(Guid id);
 }
@@ -270,6 +271,12 @@ public class AdminService : IAdminService
     {
         var release = await _context.ApkReleases.FindAsync(id);
         return release?.FileData;
+    }
+
+    public Task<string?> GetApkDownloadUrlAsync(Guid id)
+    {
+        // Returns local download URL handled by the Admin Panel's download endpoint
+        return Task.FromResult<string?>($"~/api/apk-download/{id}");
     }
 
     public async Task<bool> DeleteApkAsync(Guid id)
