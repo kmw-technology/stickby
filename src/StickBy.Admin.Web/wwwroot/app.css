@@ -752,6 +752,30 @@ textarea.form-control {
 }
 
 /* Blazor Error Boundary */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--danger-color);
+    padding: 1rem;
+    color: white;
+    text-align: center;
+    z-index: 9999;
+}
+
+#blazor-error-ui .reload {
+    color: white;
+    margin-left: 0.5rem;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    margin-left: 1rem;
+    color: white;
+}
+
 .blazor-error-boundary {
     background: var(--danger-color);
     padding: 1rem;
