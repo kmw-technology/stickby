@@ -1,6 +1,73 @@
-# CLAUDE.md
+# CLAUDE.md - StickBy Project Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides comprehensive guidance to Claude Code when working with this repository.
+
+## Project Overview
+
+**StickBy** is a contact sharing application that allows users to:
+- Store and organize personal contact information (phone, email, social media, etc.)
+- Control visibility via "Release Groups" (Family, Friends, Business, Leisure)
+- Share contact bundles via token-based URLs with QR codes
+- Collaborate in groups with shared contacts
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         PRODUCTION DEPLOYMENT                        │
+│                    https://kmw-technology.de/stickby/                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   /website          /backend              /admin-panel              │
+│   ┌──────────┐      ┌──────────┐          ┌──────────┐              │
+│   │ StickBy  │ ───► │ StickBy  │ ◄─────── │ StickBy  │              │
+│   │   Web    │      │   Api    │          │Admin.Web │              │
+│   │ (Razor)  │      │  (REST)  │          │ (Blazor) │              │
+│   └──────────┘      └────┬─────┘          └──────────┘              │
+│                          │                                           │
+│                     ┌────▼─────┐                                     │
+│                     │PostgreSQL│                                     │
+│                     │(internal)│                                     │
+│                     └──────────┘                                     │
+│                                                                      │
+│   ┌──────────────────────────────────────────────────────────┐      │
+│   │                    Flutter Mobile App                     │      │
+│   │                    (stickby_app)                         │      │
+│   │         Connects to: /stickby/backend/api/               │      │
+│   └──────────────────────────────────────────────────────────┘      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## Project Structure
+
+```
+stickby/
+├── src/
+│   ├── StickBy.Api/          # Backend REST API (JWT auth, business logic)
+│   ├── StickBy.Web/          # Razor Pages frontend (SSR website)
+│   ├── StickBy.Admin.Web/    # Blazor Server admin dashboard
+│   ├── StickBy.Infrastructure/  # EF Core, entities, migrations
+│   ├── StickBy.Shared/       # DTOs and enums shared across projects
+│   └── stickby_app/          # Flutter mobile app
+├── tests/
+│   ├── StickBy.Api.Tests/    # xUnit unit tests
+│   └── StickBy.E2E.Tests/    # Playwright/NUnit E2E tests
+├── deployment/               # Docker, nginx, production configs
+├── documentation/            # Additional docs
+└── artifacts/                # Old code, scripts, temporary files
+```
+
+## Key Technologies
+
+| Layer | Technology |
+|-------|------------|
+| Backend API | ASP.NET Core 8.0, JWT Bearer Auth |
+| Website | ASP.NET Core Razor Pages |
+| Admin Panel | Blazor Server (Interactive SSR) |
+| Mobile App | Flutter 3.5+ with Provider |
+| Database | PostgreSQL via EF Core + Npgsql |
+| Deployment | Docker, nginx reverse proxy |
+| Testing | xUnit, Playwright, NUnit |
 
 ## Build and Run Commands
 
@@ -8,81 +75,149 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build entire solution
 dotnet build StickBy.sln
 
-# Run the main API (serves both API and Blazor WASM frontend)
+# Run Backend API (port 5001 locally)
 dotnet run --project src/StickBy.Api
 
-# Run the Admin Web (Blazor Server)
+# Run Website (port 5000 locally, needs API running)
+dotnet run --project src/StickBy.Web
+
+# Run Admin Panel (port 5051)
 dotnet run --project src/StickBy.Admin.Web
 
-# Run unit tests (xUnit)
-dotnet test tests/StickBy.Api.Tests
+# Run tests
+dotnet test tests/StickBy.Api.Tests          # Unit tests
+dotnet test tests/StickBy.E2E.Tests          # E2E tests (requires running app)
 
-# Run E2E tests (Playwright/NUnit) - requires app running on localhost:5050
-dotnet test tests/StickBy.E2E.Tests
-
-# Run a single test
-dotnet test tests/StickBy.Api.Tests --filter "FullyQualifiedName~TestMethodName"
-
-# EF Core migrations (run from solution root)
-dotnet ef migrations add MigrationName --project src/StickBy.Infrastructure --startup-project src/StickBy.Api
+# EF Core migrations
+dotnet ef migrations add <Name> --project src/StickBy.Infrastructure --startup-project src/StickBy.Api
 dotnet ef database update --project src/StickBy.Infrastructure --startup-project src/StickBy.Api
+
+# Flutter app
+cd src/stickby_app
+flutter pub get
+flutter run -d chrome    # Web
+flutter run -d windows   # Desktop
+flutter run              # Connected device
 ```
 
-## Docker Development
+## Production Deployment
 
+**URLs:**
+- Website: https://kmw-technology.de/stickby/website
+- API: https://kmw-technology.de/stickby/backend
+- Admin: https://kmw-technology.de/stickby/admin-panel
+
+**Deploy changes:**
 ```bash
-# Start all services (PostgreSQL, API, Admin)
-docker-compose -f docker-compose.dev.yml up -d
+# From local machine
+git push origin master
 
-# Services:
-# - postgres: localhost:5432
-# - api: localhost:5050
-# - admin: localhost:5051
+# On server (/opt/stickby)
+cd /opt/stickby && git pull
+cd deployment
+docker compose -f docker-compose.production.yml --env-file .env.production build <service>
+docker compose -f docker-compose.production.yml --env-file .env.production up -d <service>
+
+# Services: website, backend, admin, postgres
 ```
 
-## Architecture
-
-This is a **contact sharing** application with two separate frontends:
-
-### Project Structure
-- **StickBy.Api** - Main ASP.NET Core API with JWT authentication. Hosts Blazor WASM client.
-- **StickBy.Web** - Blazor WebAssembly PWA (public-facing frontend). Compiled and served by StickBy.Api.
-- **StickBy.Admin.Api** - Admin API (currently scaffolded, not implemented)
-- **StickBy.Admin.Web** - Admin dashboard using Blazor Server with interactive SSR
-- **StickBy.Infrastructure** - EF Core DbContext, entities, and migrations (PostgreSQL via Npgsql)
-- **StickBy.Shared** - Enums and DTOs shared between API and frontends
-
-### Data Flow
-The Blazor WASM frontend (StickBy.Web) communicates with the API via HTTP. The API uses services in the `Services/` folder which interact with the database through `StickByDbContext`.
-
-### Key Entities
-- **User** - ASP.NET Identity user with contacts, shares, and group memberships
-- **ContactInfo** - Encrypted contact information (phone, email, etc.) owned by users
-- **Share** - Shareable link containing selected contacts (token-based public access)
-- **Group** - User groups for sharing contacts among members
-- **GroupShare** - Contact shares within a group context
+## API Endpoints Reference
 
 ### Authentication
-- JWT Bearer tokens with refresh token rotation
-- Magic link support (passwordless)
-- Tokens configured via `Jwt:*` settings
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login, returns JWT |
+| POST | `/api/auth/refresh` | Refresh access token |
+| POST | `/api/auth/logout` | Revoke refresh token |
 
-### Services Pattern
-API services follow interface/implementation pattern:
-- `IAuthService` / `AuthService` - Authentication logic
-- `IContactService` / `ContactService` - Contact CRUD with encryption
-- `IShareService` / `ShareService` - Share management
-- `IGroupService` / `GroupService` - Group operations
-- `IEncryptionService` / `EncryptionService` - AES encryption for contact values
-- `IJwtService` / `JwtService` - Token generation
+### Contacts
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/contacts` | Get all user's contacts |
+| POST | `/api/contacts` | Create contact |
+| PUT | `/api/contacts/{id}` | Update contact |
+| DELETE | `/api/contacts/{id}` | Delete contact |
+
+### Shares
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/shares` | Get user's shares |
+| POST | `/api/shares` | Create share |
+| DELETE | `/api/shares/{id}` | Delete share |
+| GET | `/api/shares/view/{token}` | View share (public) |
+
+### Groups
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/groups` | Get user's groups |
+| GET | `/api/groups/invitations` | Get pending invitations |
+| POST | `/api/groups` | Create group |
+| POST | `/api/groups/{id}/join` | Accept invitation |
+| POST | `/api/groups/{id}/decline` | Decline invitation |
+| POST | `/api/groups/{id}/leave` | Leave group |
+
+### Profile
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/profile` | Get user profile with contacts |
+| PUT | `/api/profile` | Update profile |
+| PUT | `/api/profile/release-groups/bulk` | Update release groups |
+
+## Key Domain Concepts
+
+### Contact Types (by category)
+- **General (0-99)**: Email, Phone, Address, Website
+- **Personal (100-199)**: Birthday, Nationality, Education
+- **Private (200-299)**: Mobile, Emergency Contact
+- **Business (300-399)**: Company, Position, Business Email/Phone
+- **Social (400-499)**: Facebook, Instagram, LinkedIn, Twitter, etc.
+- **Gaming (500-599)**: Steam, Discord
+
+### Release Groups (bitmask flags)
+```
+None = 0, Family = 1, Friends = 2, Business = 4, Leisure = 8, All = 15
+```
+Used to control which groups can see specific contact info.
+
+### Encryption
+All contact values are encrypted at rest using AES-256 with user-specific keys derived from a master key.
+
+## Important Files to Know
+
+| File | Purpose |
+|------|---------|
+| `src/StickBy.Api/Program.cs` | API startup, DI, middleware |
+| `src/StickBy.Api/Services/` | Business logic services |
+| `src/StickBy.Web/Services/ApiService.cs` | Website → API HTTP client |
+| `src/StickBy.Web/Pages/Shared/_Layout.cshtml` | Main website layout |
+| `src/StickBy.Infrastructure/StickByDbContext.cs` | EF Core context |
+| `deployment/docker-compose.production.yml` | Production containers |
+| `deployment/.env.production` | Production secrets (on server only) |
+
+## PathBase Configuration
+
+All projects support reverse proxy deployment with PathBase:
+- Set `PathBase` in appsettings.Production.json
+- Use `~/` prefix in Razor views for links (e.g., `href="~/Auth/Login"`)
+- API uses `UsePathBase()` middleware
+
+## Common Issues & Solutions
+
+1. **Wrong URL redirects**: Ensure links use `~/` prefix, not hardcoded `/`
+2. **CSS not loading in Admin**: Check `<base href="">` in App.razor uses PathBase
+3. **API 401 errors**: Check JWT token in Authorization header, may need refresh
+4. **Docker network issues**: Ensure shared-network exists (`docker network create shared-network`)
 
 ## Configuration
 
-Environment variables (see `deployment/.env.example`):
-- `ConnectionStrings__DefaultConnection` - PostgreSQL connection string
-- `Jwt__Secret` - JWT signing key (min 32 chars)
-- `Encryption__MasterKey` - Base64-encoded encryption key
-
-## E2E Tests
-
-Tests use Playwright with NUnit. Base URL: `http://localhost:5050`. Tests extend `TestBase` which provides helpers for registration, login, and modal interaction.
+Environment variables (set in `.env.production` or docker-compose):
+```
+ConnectionStrings__DefaultConnection=Host=postgres;Database=stickby;Username=stickby;Password=xxx
+Jwt__Secret=<32+ char secret>
+Jwt__Issuer=StickByAPI
+Jwt__Audience=StickByClient
+Encryption__MasterKey=<base64 key>
+PathBase=/stickby/backend  # or /stickby/website
+ApiBaseUrl=http://backend:8080/stickby/backend/
+```
