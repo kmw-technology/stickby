@@ -1,0 +1,304 @@
+@page "/apk"
+@using StickBy.Admin.Web.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject IAdminService AdminService
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>APK Downloads - StickBy Admin</PageTitle>
+
+<div class="page-header">
+    <h1 class="page-title">APK Downloads</h1>
+</div>
+
+@if (!string.IsNullOrEmpty(_message))
+{
+    <div class="alert @(_isError ? "alert-danger" : "alert-success")">
+        @_message
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <span>Neue APK hochladen</span>
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <label class="form-label">Version</label>
+            <input type="text" class="form-control" @bind="_version" placeholder="z.B. 1.0.0" style="max-width: 200px;" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">APK Datei</label>
+            <div class="file-input-wrapper @(_selectedFile != null ? "has-file" : "")" @onclick="TriggerFileInput">
+                <div class="file-input-icon">
+                    @if (_selectedFile != null)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    }
+                </div>
+                <div class="file-input-text">
+                    @if (_selectedFile != null)
+                    {
+                        <strong>@_selectedFile.Name</strong>
+                        <span>(@FormatFileSize(_selectedFile.Size))</span>
+                    }
+                    else
+                    {
+                        <span><strong>Klicken</strong> um eine APK-Datei auszuwaehlen</span>
+                    }
+                </div>
+            </div>
+            <InputFile id="fileInput" OnChange="HandleFileSelected" accept=".apk" style="display: none;" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Release Notes (optional)</label>
+            <textarea class="form-control" @bind="_releaseNotes" placeholder="Aenderungen in dieser Version..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" @onclick="UploadApk" disabled="@(_isUploading || _selectedFile == null || string.IsNullOrWhiteSpace(_version))">
+            @if (_isUploading)
+            {
+                <span class="loading-spinner"></span>
+                <span>Uploading...</span>
+            }
+            else
+            {
+                <span>APK hochladen</span>
+            }
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span>Alle APK Releases</span>
+        <span class="badge badge-secondary">@_releases.Count</span>
+    </div>
+    <div class="card-body">
+        @if (_isLoading)
+        {
+            <div class="flex items-center gap-2">
+                <span class="loading-spinner"></span>
+                <span class="text-muted">Laden...</span>
+            </div>
+        }
+        else if (_releases.Count == 0)
+        {
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <h3>Keine APK Releases vorhanden</h3>
+                <p>Laden Sie oben eine APK-Datei hoch.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Dateiname</th>
+                            <th>Groesse</th>
+                            <th>Hochgeladen</th>
+                            <th>Status</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var release in _releases)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="apk-version">v@release.Version</span>
+                                </td>
+                                <td>@release.FileName</td>
+                                <td class="apk-size">@release.FileSizeFormatted</td>
+                                <td class="text-muted">@release.UploadedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    @if (release.IsLatest)
+                                    {
+                                        <span class="badge badge-success">Aktuell</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">Aeltere Version</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="flex gap-2">
+                                        <button class="btn btn-sm btn-primary" @onclick="() => DownloadApk(release)">
+                                            Download
+                                        </button>
+                                        @if (!release.IsLatest)
+                                        {
+                                            <button class="btn btn-sm btn-secondary" @onclick="() => SetAsLatest(release.Id)">
+                                                Als aktuell setzen
+                                            </button>
+                                        }
+                                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteApk(release.Id)">
+                                            Loeschen
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<ApkSummary> _releases = new();
+    private bool _isLoading = true;
+    private bool _isUploading = false;
+    private string? _message;
+    private bool _isError;
+
+    // Upload form
+    private string _version = "";
+    private string _releaseNotes = "";
+    private IBrowserFile? _selectedFile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReleases();
+    }
+
+    private async Task LoadReleases()
+    {
+        _isLoading = true;
+        _releases = await AdminService.GetApkReleasesAsync();
+        _isLoading = false;
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        _selectedFile = e.File;
+    }
+
+    private async Task TriggerFileInput()
+    {
+        await JS.InvokeVoidAsync("eval", "document.getElementById('fileInput').click()");
+    }
+
+    private async Task UploadApk()
+    {
+        if (_selectedFile == null || string.IsNullOrWhiteSpace(_version)) return;
+
+        _isUploading = true;
+        _message = null;
+
+        try
+        {
+            // Read file data (max 200 MB)
+            using var stream = _selectedFile.OpenReadStream(maxAllowedSize: 200 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var fileData = ms.ToArray();
+
+            await AdminService.UploadApkAsync(_version, _selectedFile.Name, fileData, _releaseNotes);
+
+            _message = $"APK Version {_version} erfolgreich hochgeladen!";
+            _isError = false;
+
+            // Reset form
+            _version = "";
+            _releaseNotes = "";
+            _selectedFile = null;
+
+            await LoadReleases();
+        }
+        catch (Exception ex)
+        {
+            _message = $"Fehler beim Hochladen: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _isUploading = false;
+        }
+    }
+
+    private async Task DownloadApk(ApkSummary release)
+    {
+        try
+        {
+            var fileData = await AdminService.GetApkFileAsync(release.Id);
+            if (fileData != null)
+            {
+                // Trigger download via JavaScript
+                var base64 = Convert.ToBase64String(fileData);
+                await JS.InvokeVoidAsync("eval", $@"
+                    var link = document.createElement('a');
+                    link.href = 'data:application/vnd.android.package-archive;base64,{base64}';
+                    link.download = '{release.FileName}';
+                    link.click();
+                ");
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = $"Fehler beim Download: {ex.Message}";
+            _isError = true;
+        }
+    }
+
+    private async Task SetAsLatest(Guid id)
+    {
+        try
+        {
+            await AdminService.SetApkAsLatestAsync(id);
+            _message = "Version als aktuell markiert!";
+            _isError = false;
+            await LoadReleases();
+        }
+        catch (Exception ex)
+        {
+            _message = $"Fehler: {ex.Message}";
+            _isError = true;
+        }
+    }
+
+    private async Task DeleteApk(Guid id)
+    {
+        try
+        {
+            await AdminService.DeleteApkAsync(id);
+            _message = "APK geloescht!";
+            _isError = false;
+            await LoadReleases();
+        }
+        catch (Exception ex)
+        {
+            _message = $"Fehler beim Loeschen: {ex.Message}";
+            _isError = true;
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024)
+            return $"{bytes} B";
+        if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
+}

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StickBy.Infrastructure.Data;
@@ -11,9 +12,11 @@ using StickBy.Infrastructure.Data;
 namespace StickBy.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(StickByDbContext))]
-    partial class StickByDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260104134212_AddApkRelease")]
+    partial class AddApkRelease
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

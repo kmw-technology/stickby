@@ -22,6 +22,7 @@ public class StickByDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid
     public DbSet<GroupShare> GroupShares => Set<GroupShare>();
     public DbSet<GroupShareContact> GroupShareContacts => Set<GroupShareContact>();
     public DbSet<Company> Companies => Set<Company>();
+    public DbSet<ApkRelease> ApkReleases => Set<ApkRelease>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -216,6 +217,24 @@ public class StickByDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid
             entity.Property(c => c.BackgroundImageUrl).HasMaxLength(500);
 
             entity.HasIndex(c => c.IsContractor);
+        });
+
+        // ApkRelease configuration
+        builder.Entity<ApkRelease>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.Version).HasMaxLength(20).IsRequired();
+            entity.Property(a => a.FileName).HasMaxLength(200).IsRequired();
+            entity.Property(a => a.ReleaseNotes).HasMaxLength(2000);
+
+            entity.HasOne(a => a.UploadedBy)
+                .WithMany()
+                .HasForeignKey(a => a.UploadedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(a => a.Version);
+            entity.HasIndex(a => a.IsLatest);
+            entity.HasIndex(a => a.UploadedAt);
         });
     }
 }

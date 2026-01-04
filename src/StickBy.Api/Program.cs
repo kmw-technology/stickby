@@ -59,6 +59,7 @@ builder.Services.AddScoped<IShareService, ShareService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IApkService, ApkService>();
 
 // CORS
 builder.Services.AddCors(options =>
