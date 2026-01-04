@@ -2,13 +2,36 @@
 
 ## Voraussetzungen
 
-- SSH Zugang zum Server (5.9.120.221)
+- SSH Zugang zum Server (5.9.120.221 / kmw-technology.de)
 - `shared-network` Docker-Netzwerk existiert bereits
 - nginx Container läuft
 
-## Deployment Schritte
+## Quick Deploy (nur Backend neu bauen)
 
-### 1. Projekt auf Server kopieren
+```bash
+# Einloggen und deployen
+ssh root@kmw-technology.de
+cd /opt/stickby && git pull
+cd deployment
+docker compose -f docker-compose.production.yml --env-file .env.production build backend
+docker compose -f docker-compose.production.yml --env-file .env.production up -d backend
+docker logs stickby-backend --tail 20
+```
+
+## Quick Deploy (alle Services)
+
+```bash
+ssh root@kmw-technology.de
+cd /opt/stickby && git pull
+cd deployment
+docker compose -f docker-compose.production.yml --env-file .env.production up -d --build
+```
+
+---
+
+## Vollständige Deployment Schritte
+
+### 1. Projekt auf Server kopieren (nur bei Erstinstallation)
 
 ```bash
 # Vom lokalen Rechner aus:
@@ -37,18 +60,27 @@ docker compose -f docker-compose.production.yml --env-file .env.production build
 docker compose -f docker-compose.production.yml --env-file .env.production up -d
 ```
 
-### 5. nginx Konfiguration ergänzen
+### 5. nginx Konfiguration aktualisieren
+
+Die nginx Config ist in `deployment/nginx-stickby.conf` versioniert.
+Bei Änderungen (z.B. neue SignalR Hubs) muss sie auf dem Server aktualisiert werden:
 
 ```bash
 # Backup erstellen
 cp /opt/infrastructure/nginx.conf /opt/infrastructure/nginx.conf.backup.$(date +%Y%m%d_%H%M%S)
 
-# Konfiguration bearbeiten
+# nginx-stickby.conf anzeigen (als Referenz)
+cat /opt/stickby/deployment/nginx-stickby.conf
+
+# Konfiguration bearbeiten und Locations aktualisieren
 nano /opt/infrastructure/nginx.conf
 
-# Füge den Inhalt von nginx-stickby.conf ein:
-# - Upstreams im http-Block
-# - Locations im server-Block (vor dem Fallback)
+# WICHTIG: Diese Locations müssen vorhanden sein:
+# - /stickby/website           (Razor Pages)
+# - /stickby/backend/hubs/     (SignalR WebSocket - VOR /stickby/backend!)
+# - /stickby/backend           (REST API)
+# - /stickby/admin-panel/_blazor (Blazor SignalR)
+# - /stickby/admin-panel       (Blazor Server)
 ```
 
 ### 6. nginx testen und neu laden
@@ -61,9 +93,16 @@ docker exec nginx nginx -s reload
 ### 7. Endpoints testen
 
 ```bash
+# Basis-Endpoints
 curl -s -o /dev/null -w "%{http_code}\n" https://www.kmw-technology.de/stickby/website/
 curl -s -o /dev/null -w "%{http_code}\n" https://www.kmw-technology.de/stickby/backend/health
 curl -s -o /dev/null -w "%{http_code}\n" https://www.kmw-technology.de/stickby/admin-panel/
+
+# Demo Sync API
+curl -s https://www.kmw-technology.de/stickby/backend/api/demo/identities
+
+# SignalR Hub (sollte 400 zurückgeben - erwartet WebSocket)
+curl -s -o /dev/null -w "%{http_code}\n" https://www.kmw-technology.de/stickby/backend/hubs/demosync
 ```
 
 ## URLs
