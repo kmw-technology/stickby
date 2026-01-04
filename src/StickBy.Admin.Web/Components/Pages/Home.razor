@@ -1,0 +1,148 @@
+﻿@page "/"
+@using StickBy.Admin.Web.Services
+@inject IAdminService AdminService
+@rendermode InteractiveServer
+
+<PageTitle>StickBy Admin Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+
+@if (_stats == null)
+{
+    <p><em>Laden...</em></p>
+}
+else
+{
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">@_stats.TotalUsers</div>
+            <div class="stat-label">Benutzer gesamt</div>
+            <div class="stat-detail">@_stats.ActiveUsers aktiv</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">@_stats.TotalContacts</div>
+            <div class="stat-label">Kontakte gesamt</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">@_stats.TotalShares</div>
+            <div class="stat-label">Shares gesamt</div>
+            <div class="stat-detail">@_stats.TotalShareViews Aufrufe</div>
+        </div>
+        <div class="stat-card highlight">
+            <div class="stat-value">@_stats.NewUsersLast24Hours</div>
+            <div class="stat-label">Neue Benutzer (24h)</div>
+            <div class="stat-detail">@_stats.NewUsersLast7Days in letzten 7 Tagen</div>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Letzte Aktivitaeten</h2>
+        @if (_stats.RecentAuditLogs.Count == 0)
+        {
+            <p class="empty-state">Keine Aktivitaeten vorhanden.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Zeit</th>
+                        <th>Aktion</th>
+                        <th>Benutzer</th>
+                        <th>Entitaet</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in _stats.RecentAuditLogs)
+                    {
+                        <tr>
+                            <td>@log.Timestamp.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@log.Action</td>
+                            <td>@(log.UserEmail ?? "-")</td>
+                            <td>@(log.EntityType ?? "-") @(log.EntityId != null ? $"({log.EntityId[..Math.Min(8, log.EntityId.Length)]}...)" : "")</td>
+                            <td>@(log.IpAddress ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-card.highlight {
+        background: #e7f5ff;
+        border: 1px solid #74c0fc;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #228be6;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: #495057;
+        margin-top: 0.5rem;
+    }
+
+    .stat-detail {
+        font-size: 0.875rem;
+        color: #868e96;
+        margin-top: 0.25rem;
+    }
+
+    .dashboard-section {
+        margin-top: 2rem;
+    }
+
+    .dashboard-section h2 {
+        margin-bottom: 1rem;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th, .table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        color: #868e96;
+        font-style: italic;
+    }
+</style>
+
+@code {
+    private DashboardStats? _stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stats = await AdminService.GetDashboardStatsAsync();
+    }
+}

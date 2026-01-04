@@ -1,0 +1,22 @@
+# Development Dockerfile - simpler build for local testing
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy everything and restore
+COPY . .
+RUN dotnet restore StickBy.sln
+
+# Build everything
+RUN dotnet publish src/StickBy.Api/StickBy.Api.csproj -c Release -o /app/api
+RUN dotnet publish src/StickBy.Web/StickBy.Web.csproj -c Release -o /app/web
+
+# Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+COPY --from=build /app/api .
+COPY --from=build /app/web/wwwroot ./wwwroot
+
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "StickBy.Api.dll"]

@@ -1,0 +1,170 @@
+@page
+@model StickBy.Web.Pages.Profile.IndexModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["profile.title"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["profile.title"]</h1>
+</div>
+
+@if (Model.Profile != null)
+{
+    <div class="profile-header">
+        <div class="avatar large">
+            @if (!string.IsNullOrEmpty(Model.Profile.ProfileImageUrl))
+            {
+                <img src="@Model.Profile.ProfileImageUrl" alt="@Model.Profile.DisplayName" />
+            }
+            else
+            {
+                @GetInitials(Model.Profile.DisplayName)
+            }
+        </div>
+        <div class="profile-name">@Model.Profile.DisplayName</div>
+        <div class="profile-email">@Model.Profile.Email</div>
+        @if (!string.IsNullOrEmpty(Model.Profile.Bio))
+        {
+            <div class="profile-bio">@Model.Profile.Bio</div>
+        }
+        <div class="profile-actions">
+            <a href="/Profile/ReleaseGroups" class="btn-secondary">
+                @L["profile.releaseGroups"]
+            </a>
+        </div>
+    </div>
+
+    @foreach (var category in Model.Profile.ContactsByCategory.Where(c => c.Value.Any()).OrderBy(c => GetCategoryOrder(c.Key)))
+    {
+        <div class="category-dropdown">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <div class="category-title">
+                    @GetCategoryDisplayName(category.Key)
+                    <span class="category-count">@category.Value.Count</span>
+                </div>
+                <svg class="category-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </div>
+            <div class="category-content">
+                @foreach (var contact in category.Value.OrderBy(c => c.SortOrder))
+                {
+                    <div class="contact-item">
+                        <div class="contact-item-content">
+                            <span class="contact-label">@contact.Label</span>
+                            <span class="contact-value">@contact.Value</span>
+                        </div>
+                        <div class="release-badges">
+                            @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Family))
+                            {
+                                <span class="release-badge" title="@L["releaseGroups.family"]">F</span>
+                            }
+                            @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Friends))
+                            {
+                                <span class="release-badge" title="@L["releaseGroups.friends"]">Fr</span>
+                            }
+                            @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Business))
+                            {
+                                <span class="release-badge" title="@L["releaseGroups.business"]">B</span>
+                            }
+                            @if (contact.ReleaseGroups.HasFlag(ReleaseGroup.Leisure))
+                            {
+                                <span class="release-badge" title="@L["releaseGroups.leisure"]">L</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
+@functions {
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name[0].ToString().ToUpper();
+    }
+
+    private string GetCategoryDisplayName(string key)
+    {
+        return key switch
+        {
+            "personal" => L["category.personal"],
+            "private" => L["category.private"],
+            "business" => L["category.business"],
+            "social" => L["category.social"],
+            "gaming" => L["category.gaming"],
+            _ => L.CurrentLanguage == "de" ? "Allgemein" : "General"
+        };
+    }
+
+    private int GetCategoryOrder(string key)
+    {
+        return key switch
+        {
+            "personal" => 0,
+            "private" => 1,
+            "business" => 2,
+            "social" => 3,
+            "gaming" => 4,
+            _ => 5
+        };
+    }
+}
+
+<script>
+function toggleCategory(header) {
+    const content = header.nextElementSibling;
+    const chevron = header.querySelector('.category-chevron');
+    content.classList.toggle('collapsed');
+    chevron.classList.toggle('open');
+}
+</script>
+
+<style>
+    .profile-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    .contact-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .contact-item:last-child { border-bottom: none; }
+    .contact-item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .contact-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+    }
+    .contact-value { font-weight: 500; }
+    .release-badges {
+        display: flex;
+        gap: 0.25rem;
+    }
+    .release-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        font-size: 0.625rem;
+        font-weight: 600;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 4px;
+    }
+</style>

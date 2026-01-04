@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stickby-db-dev
+    environment:
+      POSTGRES_USER: stickby
+      POSTGRES_PASSWORD: stickby_dev
+      POSTGRES_DB: stickby
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stickby"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile.Dev
+    container_name: stickby-api-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=stickby;Username=stickby;Password=stickby_dev
+      - Jwt__Secret=dev-super-secret-key-that-is-at-least-32-characters-long
+      - Jwt__Issuer=stickby
+      - Jwt__Audience=stickby-users
+      - Jwt__ExpiryMinutes=15
+      - Jwt__RefreshTokenExpiryDays=7
+      - MagicLink__ExpiryMinutes=15
+      - Encryption__MasterKey=ZGV2LW1hc3Rlci1rZXktdGhhdC1pcy0zMi1ieXRlcw==
+    ports:
+      - "5050:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  admin:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile.AdminServer
+    container_name: stickby-admin-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=stickby;Username=stickby;Password=stickby_dev
+      - Admin__Username=admin
+      - Admin__Password=admin123
+    ports:
+      - "5051:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data_dev:

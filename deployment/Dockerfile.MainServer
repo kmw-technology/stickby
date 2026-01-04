@@ -1,0 +1,42 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY StickBy.sln .
+COPY src/StickBy.Shared/StickBy.Shared.csproj src/StickBy.Shared/
+COPY src/StickBy.Infrastructure/StickBy.Infrastructure.csproj src/StickBy.Infrastructure/
+COPY src/StickBy.Api/StickBy.Api.csproj src/StickBy.Api/
+COPY src/StickBy.Web/StickBy.Web.csproj src/StickBy.Web/
+
+# Copy source code
+COPY src/StickBy.Shared/ src/StickBy.Shared/
+COPY src/StickBy.Infrastructure/ src/StickBy.Infrastructure/
+COPY src/StickBy.Api/ src/StickBy.Api/
+COPY src/StickBy.Web/ src/StickBy.Web/
+
+# Restore and publish API
+RUN dotnet restore src/StickBy.Api/StickBy.Api.csproj
+RUN dotnet publish src/StickBy.Api/StickBy.Api.csproj -c Release -o /app/publish --no-restore
+
+# Restore and publish Blazor WASM
+RUN dotnet restore src/StickBy.Web/StickBy.Web.csproj
+RUN dotnet publish src/StickBy.Web/StickBy.Web.csproj -c Release -o /app/wwwroot --no-restore
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# Copy published API
+COPY --from=build /app/publish .
+
+# Copy Blazor WASM to wwwroot
+COPY --from=build /app/wwwroot/wwwroot ./wwwroot
+
+EXPOSE 8080
+EXPOSE 8081
+
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+ENTRYPOINT ["dotnet", "StickBy.Api.dll"]

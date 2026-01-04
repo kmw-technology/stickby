@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stickby-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-stickby}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stickby_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-stickby}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stickby}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stickby-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: stickby-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@stickby.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - stickby-network
+
+  main-server:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.MainServer
+    container_name: stickby-main
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-stickby};Username=${POSTGRES_USER:-stickby};Password=${POSTGRES_PASSWORD:-stickby_secret}
+      - Jwt__Secret=${JWT_SECRET:-your-super-secret-key-that-should-be-at-least-32-chars}
+      - Jwt__Issuer=${JWT_ISSUER:-stickby}
+      - Jwt__Audience=${JWT_AUDIENCE:-stickby-users}
+    ports:
+      - "80:8080"
+      - "443:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - stickby-network
+
+  admin-server:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.AdminServer
+    container_name: stickby-admin
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-stickby};Username=${POSTGRES_USER:-stickby};Password=${POSTGRES_PASSWORD:-stickby_secret}
+      - Admin__Username=${ADMIN_USERNAME:-admin}
+      - Admin__Password=${ADMIN_PASSWORD:-admin_secret}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - stickby-network
+
+volumes:
+  postgres_data:
+
+networks:
+  stickby-network:
+    driver: bridge

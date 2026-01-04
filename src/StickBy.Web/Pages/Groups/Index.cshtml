@@ -1,0 +1,43 @@
+@page
+@model StickBy.Web.Pages.Groups.IndexModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["groups.title"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["groups.title"]</h1>
+</div>
+
+@if (!Model.Groups.Any())
+{
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M18 21a8 8 0 0 0-16 0"/>
+            <circle cx="10" cy="8" r="5"/>
+            <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
+        </svg>
+        <h3>@L["groups.empty"]</h3>
+    </div>
+}
+else
+{
+    <div class="groups-grid">
+        @foreach (var group in Model.Groups)
+        {
+            <a href="/Groups/@group.Id" class="group-card">
+                <div class="group-card-cover"></div>
+                <div class="group-card-body">
+                    <div class="group-card-name">@group.Name</div>
+                    @if (!string.IsNullOrEmpty(group.Description))
+                    {
+                        <div class="group-card-description">@group.Description</div>
+                    }
+                    <div class="group-card-meta">
+                        <span>@group.MemberCount @L["groups.members"]</span>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+}

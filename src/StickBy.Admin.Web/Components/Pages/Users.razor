@@ -1,0 +1,412 @@
+@page "/users"
+@using StickBy.Admin.Web.Services
+@inject IAdminService AdminService
+@rendermode InteractiveServer
+
+<PageTitle>Benutzerverwaltung - StickBy Admin</PageTitle>
+
+<h1>Benutzerverwaltung</h1>
+
+<div class="search-bar">
+    <input type="text" @bind="_searchTerm" @bind:event="oninput" @onkeyup="HandleSearch" placeholder="Suche nach E-Mail oder Name..." class="search-input" />
+    <button class="btn-search" @onclick="Search">Suchen</button>
+</div>
+
+@if (_loading)
+{
+    <p><em>Laden...</em></p>
+}
+else
+{
+    <div class="user-stats">
+        <span>@_totalCount Benutzer gefunden</span>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>E-Mail</th>
+                <th>Status</th>
+                <th>Registriert</th>
+                <th>Letzter Login</th>
+                <th>Kontakte</th>
+                <th>Shares</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in _users)
+            {
+                <tr class="@(user.IsActive ? "" : "inactive")">
+                    <td>@user.DisplayName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <span class="status-badge @(user.IsActive ? "active" : "inactive")">
+                            @(user.IsActive ? "Aktiv" : "Gesperrt")
+                        </span>
+                    </td>
+                    <td>@user.CreatedAt.ToString("dd.MM.yyyy")</td>
+                    <td>@(user.LastLoginAt?.ToString("dd.MM.yyyy HH:mm") ?? "-")</td>
+                    <td>@user.ContactCount</td>
+                    <td>@user.ShareCount</td>
+                    <td>
+                        <button class="btn-action" @onclick="() => ViewUser(user.Id)">Details</button>
+                        <button class="btn-action @(user.IsActive ? "danger" : "success")" @onclick="() => ToggleUserActive(user.Id)">
+                            @(user.IsActive ? "Sperren" : "Aktivieren")
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (_totalCount > _pageSize)
+    {
+        <div class="pagination">
+            <button class="btn-page" disabled="@(_page <= 1)" @onclick="PreviousPage">Zurueck</button>
+            <span>Seite @_page von @TotalPages</span>
+            <button class="btn-page" disabled="@(_page >= TotalPages)" @onclick="NextPage">Weiter</button>
+        </div>
+    }
+}
+
+@if (_selectedUser != null)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="modal" @onclick:stopPropagation>
+            <h2>Benutzerdetails</h2>
+
+            <div class="user-detail">
+                <div class="detail-row">
+                    <span class="label">Name:</span>
+                    <span class="value">@_selectedUser.DisplayName</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">E-Mail:</span>
+                    <span class="value">@_selectedUser.Email</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Status:</span>
+                    <span class="value">
+                        <span class="status-badge @(_selectedUser.IsActive ? "active" : "inactive")">
+                            @(_selectedUser.IsActive ? "Aktiv" : "Gesperrt")
+                        </span>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">E-Mail bestaetigt:</span>
+                    <span class="value">@(_selectedUser.EmailConfirmed ? "Ja" : "Nein")</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Registriert:</span>
+                    <span class="value">@_selectedUser.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Letzter Login:</span>
+                    <span class="value">@(_selectedUser.LastLoginAt?.ToString("dd.MM.yyyy HH:mm") ?? "-")</span>
+                </div>
+            </div>
+
+            <h3>Kontakte (@_selectedUser.Contacts.Count)</h3>
+            @if (_selectedUser.Contacts.Count == 0)
+            {
+                <p class="empty-state">Keine Kontakte vorhanden.</p>
+            }
+            else
+            {
+                <ul class="item-list">
+                    @foreach (var contact in _selectedUser.Contacts)
+                    {
+                        <li>@contact.Type: @contact.Label</li>
+                    }
+                </ul>
+            }
+
+            <h3>Shares (@_selectedUser.Shares.Count)</h3>
+            @if (_selectedUser.Shares.Count == 0)
+            {
+                <p class="empty-state">Keine Shares vorhanden.</p>
+            }
+            else
+            {
+                <ul class="item-list">
+                    @foreach (var share in _selectedUser.Shares)
+                    {
+                        <li>@(share.Name ?? "Unbenannt") - @share.ViewCount Aufrufe</li>
+                    }
+                </ul>
+            }
+
+            <div class="modal-actions">
+                <button class="btn-secondary" @onclick="CloseModal">Schliessen</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .search-bar {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .btn-search {
+        padding: 0.5rem 1rem;
+        background: #228be6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-search:hover {
+        background: #1c7ed6;
+    }
+
+    .user-stats {
+        margin-bottom: 1rem;
+        color: #868e96;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th, .table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .table tr.inactive {
+        background: #fff5f5;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+    }
+
+    .status-badge.active {
+        background: #d3f9d8;
+        color: #2b8a3e;
+    }
+
+    .status-badge.inactive {
+        background: #ffe3e3;
+        color: #c92a2a;
+    }
+
+    .btn-action {
+        padding: 0.25rem 0.5rem;
+        margin-right: 0.25rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+
+    .btn-action:hover {
+        background: #f8f9fa;
+    }
+
+    .btn-action.danger {
+        color: #c92a2a;
+        border-color: #c92a2a;
+    }
+
+    .btn-action.success {
+        color: #2b8a3e;
+        border-color: #2b8a3e;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-page {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .btn-page:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal h2 {
+        margin-bottom: 1rem;
+    }
+
+    .modal h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .user-detail {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 4px;
+    }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
+
+    .detail-row .label {
+        width: 140px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .item-list {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .item-list li {
+        margin-bottom: 0.25rem;
+    }
+
+    .empty-state {
+        color: #868e96;
+        font-style: italic;
+    }
+
+    .modal-actions {
+        margin-top: 1.5rem;
+        text-align: right;
+    }
+
+    .btn-secondary {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    private List<UserSummary> _users = new();
+    private UserDetail? _selectedUser;
+    private string _searchTerm = "";
+    private bool _loading = true;
+    private int _page = 1;
+    private int _pageSize = 20;
+    private int _totalCount;
+
+    private int TotalPages => (int)Math.Ceiling((double)_totalCount / _pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        _loading = true;
+        _users = await AdminService.GetUsersAsync(_searchTerm, _page, _pageSize);
+        _totalCount = await AdminService.GetUserCountAsync(_searchTerm);
+        _loading = false;
+    }
+
+    private async Task Search()
+    {
+        _page = 1;
+        await LoadUsers();
+    }
+
+    private async Task HandleSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Search();
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (_page > 1)
+        {
+            _page--;
+            await LoadUsers();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (_page < TotalPages)
+        {
+            _page++;
+            await LoadUsers();
+        }
+    }
+
+    private async Task ViewUser(Guid userId)
+    {
+        _selectedUser = await AdminService.GetUserDetailAsync(userId);
+    }
+
+    private async Task ToggleUserActive(Guid userId)
+    {
+        await AdminService.ToggleUserActiveAsync(userId);
+        await LoadUsers();
+    }
+
+    private void CloseModal()
+    {
+        _selectedUser = null;
+    }
+}

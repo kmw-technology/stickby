@@ -1,0 +1,33 @@
+@page
+@model LoginModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["auth.login"];
+}
+
+<div class="auth-container">
+    <h1>@L["auth.login"]</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="error-message">@Model.ErrorMessage</div>
+    }
+
+    <form method="post">
+        <div class="form-group">
+            <label asp-for="Email">@L["auth.email"]</label>
+            <input asp-for="Email" type="email" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Password">@L["auth.password"]</label>
+            <input asp-for="Password" type="password" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%;">@L["auth.login"]</button>
+    </form>
+
+    <div class="auth-link">
+        <p>@L["auth.noAccount"] <a href="/Auth/Register">@L["nav.register"]</a></p>
+    </div>
+</div>

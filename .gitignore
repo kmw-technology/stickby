@@ -1,0 +1,53 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+
+# NuGet
+packages/
+*.nupkg
+
+# Test results
+TestResults/
+coverage/
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment files with secrets
+.env
+.env.local
+.env.production
+deployment/.env.production
+
+# Database files
+*.db
+*.sqlite
+
+# Published output
+publish/
+
+# Artifacts folder (old code, temporary files)
+artifacts/
+
+# Windows reserved names
+nul
+NUL

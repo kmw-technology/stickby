@@ -1,0 +1,144 @@
+@page
+@model StickBy.Web.Pages.Companies.IndexModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["companies.title"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["nav.companies"]</h1>
+</div>
+
+<div class="toggle-tabs">
+    <a href="/Companies?contractors=false" class="toggle-tab @(!Model.ShowContractors ? "active" : "")">
+        @L["companies.companies"]
+    </a>
+    <a href="/Companies?contractors=true" class="toggle-tab @(Model.ShowContractors ? "active" : "")">
+        @L["companies.contractors"]
+    </a>
+</div>
+
+@if (!Model.Companies.Any())
+{
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        <h3>@(Model.ShowContractors ? L["companies.noContractors"] : L["companies.noCompanies"])</h3>
+    </div>
+}
+else
+{
+    <div class="companies-list">
+        @foreach (var company in Model.Companies)
+        {
+            <a href="/Companies/@company.Id" class="company-card">
+                <div class="company-logo">
+                    @if (!string.IsNullOrEmpty(company.LogoUrl))
+                    {
+                        <img src="@company.LogoUrl" alt="@company.Name" />
+                    }
+                    else
+                    {
+                        <span>@GetInitials(company.Name)</span>
+                    }
+                </div>
+                <div class="company-info">
+                    <div class="company-name">@company.Name</div>
+                    @if (!string.IsNullOrEmpty(company.Description))
+                    {
+                        <div class="company-description">@company.Description</div>
+                    }
+                    <div class="company-meta">
+                        <span class="follower-count">@company.FollowerCount @L["companies.followers"]</span>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+}
+
+@functions {
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name.Length >= 2 ? name[..2].ToUpper() : name[0].ToString().ToUpper();
+    }
+}
+
+<style>
+    .toggle-tabs {
+        display: flex;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 0.25rem;
+        margin-bottom: 1rem;
+    }
+    .toggle-tab {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-muted);
+        font-weight: 500;
+        border-radius: 0.375rem;
+        transition: all 0.2s;
+    }
+    .toggle-tab.active {
+        background: var(--primary-color);
+        color: white;
+    }
+    .companies-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .company-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.2s;
+    }
+    .company-card:hover {
+        border-color: var(--primary-color);
+    }
+    .company-logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 0.5rem;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    .company-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0.5rem;
+    }
+    .company-info { flex: 1; }
+    .company-name { font-weight: 600; }
+    .company-description {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+    .company-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+</style>

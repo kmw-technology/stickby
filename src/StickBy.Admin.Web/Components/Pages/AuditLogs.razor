@@ -1,0 +1,248 @@
+@page "/audit-logs"
+@using StickBy.Admin.Web.Services
+@inject IAdminService AdminService
+@rendermode InteractiveServer
+
+<PageTitle>Audit Logs - StickBy Admin</PageTitle>
+
+<h1>Audit Logs</h1>
+
+@if (_loading)
+{
+    <p><em>Laden...</em></p>
+}
+else
+{
+    <div class="stats">
+        <span>@_totalCount Eintraege gesamt</span>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Zeitpunkt</th>
+                <th>Aktion</th>
+                <th>Benutzer</th>
+                <th>Entitaet</th>
+                <th>Details</th>
+                <th>IP-Adresse</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in _logs)
+            {
+                <tr>
+                    <td class="timestamp">@log.Timestamp.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                    <td>
+                        <span class="action-badge @GetActionClass(log.Action)">@log.Action</span>
+                    </td>
+                    <td>@(log.UserEmail ?? "-")</td>
+                    <td>
+                        @if (log.EntityType != null)
+                        {
+                            <span class="entity-type">@log.EntityType</span>
+                            @if (log.EntityId != null)
+                            {
+                                <span class="entity-id">@log.EntityId[..Math.Min(8, log.EntityId.Length)]...</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td class="details">@(log.Details ?? "-")</td>
+                    <td class="ip">@(log.IpAddress ?? "-")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (_logs.Count == 0)
+    {
+        <p class="empty-state">Keine Audit Logs vorhanden.</p>
+    }
+
+    @if (_totalCount > _pageSize)
+    {
+        <div class="pagination">
+            <button class="btn-page" disabled="@(_page <= 1)" @onclick="PreviousPage">Zurueck</button>
+            <span>Seite @_page von @TotalPages</span>
+            <button class="btn-page" disabled="@(_page >= TotalPages)" @onclick="NextPage">Weiter</button>
+        </div>
+    }
+}
+
+<style>
+    .stats {
+        margin-bottom: 1rem;
+        color: #868e96;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .table th, .table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .timestamp {
+        font-family: monospace;
+        white-space: nowrap;
+    }
+
+    .action-badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .action-badge.create {
+        background: #d3f9d8;
+        color: #2b8a3e;
+    }
+
+    .action-badge.update {
+        background: #fff3bf;
+        color: #e67700;
+    }
+
+    .action-badge.delete {
+        background: #ffe3e3;
+        color: #c92a2a;
+    }
+
+    .action-badge.login {
+        background: #d0ebff;
+        color: #1864ab;
+    }
+
+    .action-badge.logout {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    .action-badge.view {
+        background: #e7f5ff;
+        color: #1971c2;
+    }
+
+    .entity-type {
+        background: #f1f3f5;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        margin-right: 0.25rem;
+    }
+
+    .entity-id {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #868e96;
+    }
+
+    .details {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ip {
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+
+    .empty-state {
+        color: #868e96;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-page {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .btn-page:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+@code {
+    private List<AuditLogEntry> _logs = new();
+    private bool _loading = true;
+    private int _page = 1;
+    private int _pageSize = 50;
+    private int _totalCount;
+
+    private int TotalPages => (int)Math.Ceiling((double)_totalCount / _pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLogs();
+    }
+
+    private async Task LoadLogs()
+    {
+        _loading = true;
+        _logs = await AdminService.GetAuditLogsAsync(_page, _pageSize);
+        _totalCount = await AdminService.GetAuditLogCountAsync();
+        _loading = false;
+    }
+
+    private async Task PreviousPage()
+    {
+        if (_page > 1)
+        {
+            _page--;
+            await LoadLogs();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (_page < TotalPages)
+        {
+            _page++;
+            await LoadLogs();
+        }
+    }
+
+    private string GetActionClass(string action)
+    {
+        var lowerAction = action.ToLower();
+        if (lowerAction.Contains("create") || lowerAction.Contains("register")) return "create";
+        if (lowerAction.Contains("update") || lowerAction.Contains("edit")) return "update";
+        if (lowerAction.Contains("delete") || lowerAction.Contains("remove")) return "delete";
+        if (lowerAction.Contains("login")) return "login";
+        if (lowerAction.Contains("logout")) return "logout";
+        if (lowerAction.Contains("view") || lowerAction.Contains("access")) return "view";
+        return "";
+    }
+}

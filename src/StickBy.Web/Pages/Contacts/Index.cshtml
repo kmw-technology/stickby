@@ -1,0 +1,119 @@
+@page
+@model StickBy.Web.Pages.Contacts.IndexModel
+@inject ILocalizationService L
+@{
+    ViewData["Title"] = L["contacts.title"];
+}
+
+<div class="page-header">
+    <h1 class="page-title">@L["contacts.title"]</h1>
+    <a href="/Contacts/Create" class="btn-primary">@L["contacts.add"]</a>
+</div>
+
+<form method="get" class="search-bar">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" name="search" value="@Model.SearchQuery" placeholder="@L["contacts.search"]" />
+</form>
+
+@if (!Model.Contacts.Any())
+{
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <h3>@L["contacts.empty"]</h3>
+        <p>@L["contacts.emptyHint"]</p>
+    </div>
+}
+else
+{
+    <div class="contacts-list">
+        @foreach (var group in Model.GroupedContacts)
+        {
+            <div class="category-dropdown">
+                <div class="category-header" onclick="toggleCategory(this)">
+                    <div class="category-title">
+                        @group.Key
+                        <span class="category-count">@group.Count()</span>
+                    </div>
+                    <svg class="category-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </div>
+                <div class="category-content">
+                    @foreach (var contact in group.OrderBy(c => c.SortOrder))
+                    {
+                        <div class="contact-item">
+                            <div class="contact-item-content">
+                                <span class="contact-label">@contact.Label</span>
+                                <span class="contact-value">@contact.Value</span>
+                            </div>
+                            <div class="contact-item-actions">
+                                <a href="/Contacts/Edit/@contact.Id" class="btn-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                </a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@contact.Id" style="display:inline" onsubmit="return confirm('Wirklich löschen?')">
+                                    <button type="submit" class="btn-icon delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M3 6h18"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<script>
+function toggleCategory(header) {
+    const content = header.nextElementSibling;
+    const chevron = header.querySelector('.category-chevron');
+    content.classList.toggle('collapsed');
+    chevron.classList.toggle('open');
+}
+</script>
+
+<style>
+    .contact-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .contact-item:last-child { border-bottom: none; }
+    .contact-item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .contact-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .contact-value { font-weight: 500; }
+    .contact-item-actions {
+        display: flex;
+        gap: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .contact-item:hover .contact-item-actions { opacity: 1; }
+</style>

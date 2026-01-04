@@ -1,0 +1,187 @@
+@page "/shares"
+@using StickBy.Admin.Web.Services
+@inject IAdminService AdminService
+@rendermode InteractiveServer
+
+<PageTitle>Shares - StickBy Admin</PageTitle>
+
+<h1>Shares Uebersicht</h1>
+
+@if (_loading)
+{
+    <p><em>Laden...</em></p>
+}
+else
+{
+    <div class="stats">
+        <span>@_totalCount Shares gesamt</span>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Benutzer</th>
+                <th>Token</th>
+                <th>Aufrufe</th>
+                <th>Erstellt</th>
+                <th>Laeuft ab</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var share in _shares)
+            {
+                <tr class="@GetShareRowClass(share)">
+                    <td>@(share.Name ?? "Unbenannt")</td>
+                    <td>@(share.UserEmail ?? "-")</td>
+                    <td class="token">@share.Token[..Math.Min(12, share.Token.Length)]...</td>
+                    <td>@share.ViewCount</td>
+                    <td>@share.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>@(share.ExpiresAt?.ToString("dd.MM.yyyy") ?? "Nie")</td>
+                    <td>
+                        <span class="status-badge @GetShareStatus(share).ToLower()">
+                            @GetShareStatus(share)
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (_totalCount > _pageSize)
+    {
+        <div class="pagination">
+            <button class="btn-page" disabled="@(_page <= 1)" @onclick="PreviousPage">Zurueck</button>
+            <span>Seite @_page von @TotalPages</span>
+            <button class="btn-page" disabled="@(_page >= TotalPages)" @onclick="NextPage">Weiter</button>
+        </div>
+    }
+}
+
+<style>
+    .stats {
+        margin-bottom: 1rem;
+        color: #868e96;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th, .table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .table tr.expired {
+        background: #fff5f5;
+        color: #868e96;
+    }
+
+    .token {
+        font-family: monospace;
+        font-size: 0.875rem;
+        color: #495057;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+    }
+
+    .status-badge.aktiv {
+        background: #d3f9d8;
+        color: #2b8a3e;
+    }
+
+    .status-badge.abgelaufen {
+        background: #ffe3e3;
+        color: #c92a2a;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-page {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .btn-page:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+@code {
+    private List<ShareSummary> _shares = new();
+    private bool _loading = true;
+    private int _page = 1;
+    private int _pageSize = 20;
+    private int _totalCount;
+
+    private int TotalPages => (int)Math.Ceiling((double)_totalCount / _pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShares();
+    }
+
+    private async Task LoadShares()
+    {
+        _loading = true;
+        _shares = await AdminService.GetSharesAsync(_page, _pageSize);
+        _totalCount = await AdminService.GetShareCountAsync();
+        _loading = false;
+    }
+
+    private async Task PreviousPage()
+    {
+        if (_page > 1)
+        {
+            _page--;
+            await LoadShares();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (_page < TotalPages)
+        {
+            _page++;
+            await LoadShares();
+        }
+    }
+
+    private string GetShareStatus(ShareSummary share)
+    {
+        if (share.ExpiresAt.HasValue && share.ExpiresAt.Value < DateTime.UtcNow)
+            return "Abgelaufen";
+        return "Aktiv";
+    }
+
+    private string GetShareRowClass(ShareSummary share)
+    {
+        if (share.ExpiresAt.HasValue && share.ExpiresAt.Value < DateTime.UtcNow)
+            return "expired";
+        return "";
+    }
+}

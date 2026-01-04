@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stickby-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-stickby}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-stickby}
+    volumes:
+      - stickby-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stickby}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shared-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.Backend
+    container_name: stickby-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=stickby-postgres;Database=${POSTGRES_DB:-stickby};Username=${POSTGRES_USER:-stickby};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER:-stickby}
+      - Jwt__Audience=${JWT_AUDIENCE:-stickby-users}
+      - Jwt__ExpiryMinutes=${JWT_EXPIRY_MINUTES:-15}
+      - Jwt__RefreshTokenExpiryDays=${JWT_REFRESH_EXPIRY_DAYS:-7}
+      - MagicLink__ExpiryMinutes=${MAGICLINK_EXPIRY_MINUTES:-15}
+      - Encryption__MasterKey=${ENCRYPTION_MASTER_KEY}
+      - PathBase=/stickby/backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/stickby/backend/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - shared-network
+    restart: unless-stopped
+
+  website:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.Website
+    container_name: stickby-website
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ApiBaseUrl=http://stickby-backend:8080/stickby/backend
+      - PathBase=/stickby/website
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/stickby/website/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - shared-network
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.AdminServer
+    container_name: stickby-admin
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=stickby-postgres;Database=${POSTGRES_DB:-stickby};Username=${POSTGRES_USER:-stickby};Password=${POSTGRES_PASSWORD}
+      - PathBase=/stickby/admin-panel
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/stickby/admin-panel/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - shared-network
+    restart: unless-stopped
+
+volumes:
+  stickby-postgres-data:
+    name: stickby-postgres-data
+
+networks:
+  shared-network:
+    external: true

@@ -1,0 +1,99 @@
+@inject ILocalizationService L
+<!DOCTYPE html>
+<html lang="@L.CurrentLanguage">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - StickBy</title>
+    <link rel="stylesheet" href="~/css/app.css" />
+</head>
+<body>
+    <div class="app-container">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <header class="app-header">
+                <a href="/" class="logo">StickBy</a>
+                <div class="header-actions">
+                    <a href="/Profile/Language" class="btn-icon" title="@(L.CurrentLanguage == "de" ? "English" : "Deutsch")">
+                        @(L.CurrentLanguage == "de" ? "EN" : "DE")
+                    </a>
+                    <form method="post" asp-page="/Auth/Logout" style="display: inline;">
+                        <button type="submit" class="btn-icon" title="@L["nav.logout"]">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </header>
+
+            <main class="app-main with-tabs">
+                @RenderBody()
+            </main>
+
+            <nav class="tab-bar">
+                <a href="/Home" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Home") == true ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>@L["nav.home"]</span>
+                </a>
+                <a href="/Contacts" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Contacts") == true ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>@L["nav.contacts"]</span>
+                </a>
+                <a href="/Groups" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Groups") == true ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 21a8 8 0 0 0-16 0"/>
+                        <circle cx="10" cy="8" r="5"/>
+                        <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
+                    </svg>
+                    <span>@L["nav.groups"]</span>
+                </a>
+                <a href="/Companies" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Companies") == true ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                    <span>@L["nav.companies"]</span>
+                </a>
+                <a href="/Profile" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Profile") == true ? "active" : "")">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>@L["nav.profile"]</span>
+                </a>
+            </nav>
+        }
+        else
+        {
+            <header class="app-header">
+                <a href="/" class="logo">StickBy</a>
+                <nav>
+                    <a href="/Auth/Login">@L["nav.login"]</a>
+                    <a href="/Auth/Register">@L["nav.register"]</a>
+                </nav>
+            </header>
+
+            <main class="app-main">
+                @RenderBody()
+            </main>
+
+            <footer class="app-footer">
+                <p>StickBy - Sichere Kontaktdaten</p>
+            </footer>
+        }
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

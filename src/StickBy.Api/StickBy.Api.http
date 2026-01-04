@@ -1,0 +1,6 @@
+@StickBy.Api_HostAddress = http://localhost:5229
+
+GET {{StickBy.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
