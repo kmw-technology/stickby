@@ -12,9 +12,9 @@
         @if (User.Identity?.IsAuthenticated == true)
         {
             <header class="app-header">
-                <a href="/" class="logo">StickBy</a>
+                <a href="~/" class="logo">StickBy</a>
                 <div class="header-actions">
-                    <a href="/Profile/Language" class="btn-icon" title="@(L.CurrentLanguage == "de" ? "English" : "Deutsch")">
+                    <a href="~/Profile/Language" class="btn-icon" title="@(L.CurrentLanguage == "de" ? "English" : "Deutsch")">
                         @(L.CurrentLanguage == "de" ? "EN" : "DE")
                     </a>
                     <form method="post" asp-page="/Auth/Logout" style="display: inline;">
@@ -34,14 +34,14 @@
             </main>
 
             <nav class="tab-bar">
-                <a href="/Home" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Home") == true ? "active" : "")">
+                <a href="~/Home" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Home") == true ? "active" : "")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                         <polyline points="9 22 9 12 15 12 15 22"/>
                     </svg>
                     <span>@L["nav.home"]</span>
                 </a>
-                <a href="/Contacts" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Contacts") == true ? "active" : "")">
+                <a href="~/Contacts" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Contacts") == true ? "active" : "")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
@@ -50,7 +50,7 @@
                     </svg>
                     <span>@L["nav.contacts"]</span>
                 </a>
-                <a href="/Groups" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Groups") == true ? "active" : "")">
+                <a href="~/Groups" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Groups") == true ? "active" : "")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 21a8 8 0 0 0-16 0"/>
                         <circle cx="10" cy="8" r="5"/>
@@ -58,14 +58,14 @@
                     </svg>
                     <span>@L["nav.groups"]</span>
                 </a>
-                <a href="/Companies" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Companies") == true ? "active" : "")">
+                <a href="~/Companies" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Companies") == true ? "active" : "")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
                     </svg>
                     <span>@L["nav.companies"]</span>
                 </a>
-                <a href="/Profile" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Profile") == true ? "active" : "")">
+                <a href="~/Profile" class="tab-item @(ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Profile") == true ? "active" : "")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
@@ -77,10 +77,10 @@
         else
         {
             <header class="app-header">
-                <a href="/" class="logo">StickBy</a>
+                <a href="~/" class="logo">StickBy</a>
                 <nav>
-                    <a href="/Auth/Login">@L["nav.login"]</a>
-                    <a href="/Auth/Register">@L["nav.register"]</a>
+                    <a href="~/Auth/Login">@L["nav.login"]</a>
+                    <a href="~/Auth/Register">@L["nav.register"]</a>
                 </nav>
             </header>
 

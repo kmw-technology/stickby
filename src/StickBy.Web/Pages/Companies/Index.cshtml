@@ -10,10 +10,10 @@
 </div>
 
 <div class="toggle-tabs">
-    <a href="/Companies?contractors=false" class="toggle-tab @(!Model.ShowContractors ? "active" : "")">
+    <a href="~/Companies?contractors=false" class="toggle-tab @(!Model.ShowContractors ? "active" : "")">
         @L["companies.companies"]
     </a>
-    <a href="/Companies?contractors=true" class="toggle-tab @(Model.ShowContractors ? "active" : "")">
+    <a href="~/Companies?contractors=true" class="toggle-tab @(Model.ShowContractors ? "active" : "")">
         @L["companies.contractors"]
     </a>
 </div>
@@ -33,7 +33,7 @@ else
     <div class="companies-list">
         @foreach (var company in Model.Companies)
         {
-            <a href="/Companies/@company.Id" class="company-card">
+            <a href="~/Companies/@company.Id" class="company-card">
                 <div class="company-logo">
                     @if (!string.IsNullOrEmpty(company.LogoUrl))
                     {

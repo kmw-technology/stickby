@@ -7,7 +7,7 @@
 
 @if (User.Identity?.IsAuthenticated == true)
 {
-    <script>window.location.href = '/Home';</script>
+    <script>window.location.href = '@Url.Content("~/Home")';</script>
 }
 else
 {
@@ -19,8 +19,8 @@ else
                 Teile deine Kontaktinformationen sicher und kontrolliert mit Familie, Freunden und Geschäftspartnern.
             </p>
             <div class="cta-buttons">
-                <a href="/Auth/Register" class="btn-primary">@L["nav.register"]</a>
-                <a href="/Auth/Login" class="btn-secondary">@L["nav.login"]</a>
+                <a href="~/Auth/Register" class="btn-primary">@L["nav.register"]</a>
+                <a href="~/Auth/Login" class="btn-secondary">@L["nav.login"]</a>
             </div>
         </div>
 
