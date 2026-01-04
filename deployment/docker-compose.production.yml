@@ -53,7 +53,7 @@ services:
     container_name: stickby-website
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ApiBaseUrl=http://stickby-backend:8080/stickby/backend
+      - ApiBaseUrl=http://stickby-backend:8080/stickby/backend/
       - PathBase=/stickby/website
     depends_on:
       - backend
