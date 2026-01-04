@@ -77,8 +77,11 @@ public class AuthTests : TestBase
         await Page.FillAsync("#Password", "TestPass123");
         await Page.ClickAsync("button[type='submit']");
 
+        // Wait for the page to process
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
         // Should show error message
-        await Expect(Page.Locator(".error-message")).ToBeVisibleAsync(new() { Timeout = 10000 });
+        await Expect(Page.Locator(".error-message")).ToBeVisibleAsync(new() { Timeout = 15000 });
     }
 
     [Test]

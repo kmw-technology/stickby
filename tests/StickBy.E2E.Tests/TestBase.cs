@@ -41,7 +41,8 @@ public class TestBase : PageTest
 
     protected async Task Logout()
     {
-        await Page.GotoAsync($"{BaseUrl}/Auth/Logout");
+        // Logout is a POST form in the header
+        await Page.Locator(".app-header form button[type='submit']").ClickAsync();
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 }
