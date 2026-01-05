@@ -1547,36 +1547,19 @@ input:checked + .toggle-slider:before {
 
 /* Fullscreen main for QR login */
 .app-main.fullscreen {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     max-width: none;
+    width: 100%;
+    margin: 0;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    background: #f0f2f5;
-}
-
-.app-main.fullscreen::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 220px;
-    background: #00a884;
-    z-index: 0;
-}
-
-.app-main.fullscreen::after {
-    content: '';
-    position: absolute;
-    top: 220px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: #f0f2f5;
-    z-index: 0;
+    background: linear-gradient(to bottom, #00a884 0, #00a884 220px, #f0f2f5 220px, #f0f2f5 100%);
 }
 
 /* QR Login Container - WhatsApp Web Style */
@@ -1797,12 +1780,10 @@ input:checked + .toggle-slider:before {
 
 /* Responsive QR Login - Tablet */
 @media (max-width: 900px) {
-    .app-main.fullscreen::before {
-        height: 180px;
-    }
-
-    .app-main.fullscreen::after {
-        top: 180px;
+    .app-main.fullscreen {
+        background: linear-gradient(to bottom, #00a884 0, #00a884 180px, #f0f2f5 180px, #f0f2f5 100%);
+        align-items: flex-start;
+        padding-top: 100px;
     }
 
     .qr-login {
@@ -1811,7 +1792,6 @@ input:checked + .toggle-slider:before {
         padding: 2rem;
         width: calc(100% - 2rem);
         min-height: auto;
-        margin-top: 80px;
     }
 
     /* QR code first on mobile */
@@ -1856,18 +1836,14 @@ input:checked + .toggle-slider:before {
         font-size: 1.5rem;
     }
 
-    .app-main.fullscreen::before {
-        height: 150px;
-    }
-
-    .app-main.fullscreen::after {
-        top: 150px;
+    .app-main.fullscreen {
+        background: linear-gradient(to bottom, #00a884 0, #00a884 150px, #f0f2f5 150px, #f0f2f5 100%);
+        padding-top: 80px;
     }
 
     .qr-login {
         padding: 1.5rem;
         gap: 1.5rem;
-        margin-top: 60px;
         width: calc(100% - 1rem);
     }
 
