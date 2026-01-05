@@ -1521,3 +1521,264 @@ input:checked + .toggle-slider:before {
         height: 20px;
     }
 }
+
+/* ============================================
+   WhatsApp Web-Style QR Login
+   ============================================ */
+
+/* Minimal header for login page */
+.app-header.minimal {
+    justify-content: center;
+    background: transparent;
+    border-bottom: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.app-header.minimal .logo {
+    font-size: 1.75rem;
+}
+
+/* Fullscreen main for QR login */
+.app-main.fullscreen {
+    max-width: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #00a884 0%, #00a884 30%, #f0f2f5 30%, #f0f2f5 100%);
+}
+
+/* QR Login Container - WhatsApp Web Style */
+.qr-login {
+    max-width: 900px;
+    width: 100%;
+    margin: 0;
+    padding: 3rem;
+    background: var(--surface);
+    border-radius: 0;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    display: flex;
+    gap: 4rem;
+    align-items: center;
+    min-height: 500px;
+}
+
+.qr-header {
+    flex: 1;
+}
+
+.qr-header h1 {
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.qr-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.qr-instructions {
+    text-align: left;
+    margin-top: 0;
+}
+
+.qr-instructions h3 {
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.qr-instructions ol {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.qr-instructions li {
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.qr-wrapper {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.qr-code {
+    width: 264px;
+    height: 264px;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-code canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.qr-status {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.qr-status .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.qr-expired {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    color: var(--danger-color);
+}
+
+/* App Download Page (Register) - WhatsApp Web Style */
+.app-download {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 3rem;
+    background: var(--surface);
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.app-download-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.app-download-icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+.app-download h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.app-download-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.app-features {
+    text-align: left;
+    margin-bottom: 2rem;
+}
+
+.app-feature {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+}
+
+.app-feature svg {
+    color: var(--success-color);
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+}
+
+.app-feature-text h4 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+}
+
+.app-feature-text p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.download-button:hover {
+    background: var(--primary-hover);
+}
+
+.download-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Responsive QR Login */
+@media (max-width: 900px) {
+    .app-main.fullscreen {
+        background: linear-gradient(180deg, #00a884 0%, #00a884 200px, #f0f2f5 200px);
+        padding: 1rem;
+        padding-top: 80px;
+    }
+
+    .qr-login {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 2rem;
+        border-radius: 1rem;
+        min-height: auto;
+    }
+
+    .qr-header {
+        text-align: center;
+    }
+
+    .qr-header h1 {
+        text-align: center;
+    }
+
+    .qr-instructions {
+        text-align: center;
+    }
+
+    .qr-instructions ol {
+        text-align: left;
+        display: inline-block;
+    }
+}

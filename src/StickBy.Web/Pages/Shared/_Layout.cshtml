@@ -76,21 +76,30 @@
         }
         else
         {
-            <header class="app-header">
+            @* WhatsApp Web-style: minimal header on login page *@
+            var isLoginPage = ViewContext.RouteData.Values["page"]?.ToString()?.Contains("Login") == true;
+
+            <header class="app-header @(isLoginPage ? "minimal" : "")">
                 <a href="~/" class="logo">StickBy</a>
-                <nav>
-                    <a href="~/Auth/Login">@L["nav.login"]</a>
-                    <a href="~/Auth/Register">@L["nav.register"]</a>
-                </nav>
+                @if (!isLoginPage)
+                {
+                    <nav>
+                        <a href="~/Auth/Login">@L["nav.login"]</a>
+                        <a href="~/Auth/Register">@L["nav.register"]</a>
+                    </nav>
+                }
             </header>
 
-            <main class="app-main">
+            <main class="app-main @(isLoginPage ? "fullscreen" : "")">
                 @RenderBody()
             </main>
 
-            <footer class="app-footer">
-                <p>StickBy - Sichere Kontaktdaten</p>
-            </footer>
+            @if (!isLoginPage)
+            {
+                <footer class="app-footer">
+                    <p>StickBy - Sichere Kontaktdaten</p>
+                </footer>
+            }
         }
     </div>
 

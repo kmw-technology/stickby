@@ -1,42 +1,5 @@
 @page
 @model IndexModel
-@inject ILocalizationService L
 @{
-    ViewData["Title"] = "StickBy";
-}
-
-@if (User.Identity?.IsAuthenticated == true)
-{
-    <script>window.location.href = '@Url.Content("~/Home")';</script>
-}
-else
-{
-    <div class="landing">
-        <div class="hero">
-            <h1>StickBy</h1>
-            <p class="tagline">Sichere Kontaktdaten teilen</p>
-            <p class="description">
-                Teile deine Kontaktinformationen sicher und kontrolliert mit Familie, Freunden und Geschäftspartnern.
-            </p>
-            <div class="cta-buttons">
-                <a href="~/Auth/Register" class="btn-primary">@L["nav.register"]</a>
-                <a href="~/Auth/Login" class="btn-secondary">@L["nav.login"]</a>
-            </div>
-        </div>
-
-        <div class="features">
-            <div class="feature">
-                <h3>Kategorisiert</h3>
-                <p>Organisiere deine Kontakte in Kategorien wie Persönlich, Geschäftlich, Social Media und Gaming.</p>
-            </div>
-            <div class="feature">
-                <h3>Kontrolliert</h3>
-                <p>Bestimme selbst, wer welche Informationen sehen kann mit Freigabegruppierungen.</p>
-            </div>
-            <div class="feature">
-                <h3>Sicher</h3>
-                <p>Deine Daten werden verschlüsselt gespeichert und nur mit deiner Zustimmung geteilt.</p>
-            </div>
-        </div>
-    </div>
+    // This page redirects in OnGet - this view should never render
 }
