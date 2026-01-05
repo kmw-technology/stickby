@@ -1536,10 +1536,13 @@ input:checked + .toggle-slider:before {
     left: 0;
     right: 0;
     z-index: 100;
+    padding: 1.5rem 2rem;
 }
 
 .app-header.minimal .logo {
     font-size: 1.75rem;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Fullscreen main for QR login */
@@ -1550,61 +1553,97 @@ input:checked + .toggle-slider:before {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #00a884 0%, #00a884 30%, #f0f2f5 30%, #f0f2f5 100%);
+    background: #00a884;
+}
+
+.app-main.fullscreen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 220px;
+    background: #00a884;
+}
+
+.app-main.fullscreen::after {
+    content: '';
+    position: absolute;
+    top: 220px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #f0f2f5;
 }
 
 /* QR Login Container - WhatsApp Web Style */
 .qr-login {
-    max-width: 900px;
-    width: 100%;
-    margin: 0;
-    padding: 3rem;
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    width: calc(100% - 4rem);
+    margin: 0 auto;
+    padding: 3.5rem 4rem;
     background: var(--surface);
-    border-radius: 0;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
     display: flex;
-    gap: 4rem;
-    align-items: center;
-    min-height: 500px;
+    gap: 5rem;
+    align-items: flex-start;
+    min-height: 480px;
 }
 
 .qr-header {
     flex: 1;
+    padding-top: 1rem;
 }
 
 .qr-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    font-weight: 400;
     color: var(--text);
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
     text-align: left;
 }
 
 .qr-subtitle {
-    font-size: 1.125rem;
+    font-size: 1rem;
     color: var(--text-muted);
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
 }
 
 .qr-instructions {
     text-align: left;
     margin-top: 0;
+    background: var(--background);
+    padding: 1.5rem;
+    border-radius: 8px;
 }
 
 .qr-instructions h3 {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: var(--text);
     margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .qr-instructions ol {
     margin: 0;
-    padding-left: 1.25rem;
+    padding-left: 1.5rem;
 }
 
 .qr-instructions li {
     color: var(--text-muted);
     margin-bottom: 0.75rem;
-    line-height: 1.5;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.qr-instructions li:last-child {
+    margin-bottom: 0;
 }
 
 .qr-wrapper {
@@ -1612,7 +1651,7 @@ input:checked + .toggle-slider:before {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 264px;
+    padding: 1rem;
 }
 
 .qr-code {
@@ -1620,8 +1659,8 @@ input:checked + .toggle-slider:before {
     height: 264px;
     padding: 16px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1753,31 +1792,34 @@ input:checked + .toggle-slider:before {
     height: 24px;
 }
 
-/* Responsive QR Login */
+/* Responsive QR Login - Tablet */
 @media (max-width: 900px) {
-    .app-main.fullscreen {
-        background: linear-gradient(180deg, #00a884 0%, #00a884 150px, #f0f2f5 150px);
-        padding: 1rem;
-        padding-top: 60px;
-        align-items: flex-start;
+    .app-main.fullscreen::before {
+        height: 180px;
+    }
+
+    .app-main.fullscreen::after {
+        top: 180px;
     }
 
     .qr-login {
         flex-direction: column;
-        gap: 1.5rem;
-        padding: 1.5rem;
-        border-radius: 1rem;
+        gap: 2rem;
+        padding: 2rem;
+        width: calc(100% - 2rem);
         min-height: auto;
-        margin-top: 1rem;
+        margin-top: 80px;
     }
 
     /* QR code first on mobile */
     .qr-wrapper {
         order: -1;
+        padding: 0;
     }
 
     .qr-header {
         text-align: center;
+        padding-top: 0;
     }
 
     .qr-header h1 {
@@ -1786,22 +1828,70 @@ input:checked + .toggle-slider:before {
     }
 
     .qr-subtitle {
-        font-size: 1rem;
-        margin-bottom: 1rem;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
     }
 
     .qr-instructions {
-        text-align: center;
-    }
-
-    .qr-instructions ol {
         text-align: left;
-        display: inline-block;
     }
 
     .qr-code {
-        width: 200px;
-        height: 200px;
+        width: 220px;
+        height: 220px;
         padding: 12px;
+    }
+}
+
+/* Responsive QR Login - Mobile */
+@media (max-width: 480px) {
+    .app-header.minimal {
+        padding: 1rem;
+    }
+
+    .app-header.minimal .logo {
+        font-size: 1.5rem;
+    }
+
+    .app-main.fullscreen::before {
+        height: 150px;
+    }
+
+    .app-main.fullscreen::after {
+        top: 150px;
+    }
+
+    .qr-login {
+        padding: 1.5rem;
+        gap: 1.5rem;
+        margin-top: 60px;
+        width: calc(100% - 1rem);
+    }
+
+    .qr-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .qr-instructions {
+        padding: 1rem;
+    }
+
+    .qr-instructions h3 {
+        font-size: 0.8rem;
+    }
+
+    .qr-instructions li {
+        font-size: 0.875rem;
+    }
+
+    .qr-code {
+        width: 180px;
+        height: 180px;
+        padding: 10px;
+    }
+
+    .qr-code img {
+        width: 160px !important;
+        height: 160px !important;
     }
 }
