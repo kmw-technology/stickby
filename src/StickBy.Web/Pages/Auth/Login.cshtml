@@ -3,6 +3,7 @@
 @inject ILocalizationService L
 @{
     ViewData["Title"] = L["auth.login"];
+    var qrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=232x232&data={Uri.EscapeDataString(Model.PairingToken ?? "")}";
 }
 
 <div class="qr-login">
@@ -33,7 +34,9 @@
 
         @if (!string.IsNullOrEmpty(Model.PairingToken))
         {
-            <div id="qrcode" class="qr-code"></div>
+            <div id="qrcode" class="qr-code">
+                <img src="@qrImageUrl" alt="QR Code" width="232" height="232" />
+            </div>
             <div id="qr-status" class="qr-status">
                 <div class="spinner"></div>
                 <span>@L["auth.waitingForScan"]</span>
@@ -53,7 +56,6 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         (function() {
             const pairingToken = '@Model.PairingToken';
@@ -61,24 +63,12 @@
 
             if (!pairingToken) return;
 
-            // Generate QR code
             const qrContainer = document.getElementById('qrcode');
-            QRCode.toCanvas(qrContainer, pairingToken, {
-                width: 232,
-                margin: 0,
-                color: {
-                    dark: '#1e293b',
-                    light: '#ffffff'
-                }
-            }, function(error) {
-                if (error) console.error(error);
-            });
-
-            // Poll for status
-            let pollInterval;
             const statusEl = document.getElementById('qr-status');
             const expiredEl = document.getElementById('qr-expired');
             const completeForm = document.getElementById('completeForm');
+
+            let pollInterval;
 
             function checkStatus() {
                 // Check if expired
@@ -96,7 +86,6 @@
                         if (data.status === 'authorized') {
                             clearInterval(pollInterval);
                             statusEl.innerHTML = '<span style="color: var(--success-color);">✓ @L["auth.connected"]</span>';
-                            // Submit the form to complete login
                             completeForm.submit();
                         } else if (data.status === 'expired' || data.status === 'invalidated') {
                             clearInterval(pollInterval);
@@ -110,8 +99,6 @@
 
             // Start polling every 2 seconds
             pollInterval = setInterval(checkStatus, 2000);
-
-            // Initial check
             checkStatus();
         })();
     </script>
@@ -128,5 +115,10 @@
         color: var(--text-muted);
         margin-bottom: 0.75rem;
         font-size: 0.9rem;
+    }
+
+    .qr-code img {
+        display: block;
+        border-radius: 8px;
     }
 </style>
