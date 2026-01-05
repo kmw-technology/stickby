@@ -1547,13 +1547,14 @@ input:checked + .toggle-slider:before {
 
 /* Fullscreen main for QR login */
 .app-main.fullscreen {
+    position: relative;
     max-width: none;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: #00a884;
+    background: #f0f2f5;
 }
 
 .app-main.fullscreen::before {
@@ -1564,6 +1565,7 @@ input:checked + .toggle-slider:before {
     right: 0;
     height: 220px;
     background: #00a884;
+    z-index: 0;
 }
 
 .app-main.fullscreen::after {
@@ -1574,6 +1576,7 @@ input:checked + .toggle-slider:before {
     right: 0;
     bottom: 0;
     background: #f0f2f5;
+    z-index: 0;
 }
 
 /* QR Login Container - WhatsApp Web Style */
