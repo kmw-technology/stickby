@@ -10,6 +10,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/loading_indicator.dart';
 import 'edit_profile_screen.dart';
 import 'release_groups_screen.dart';
+import '../settings/connect_web_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -92,14 +93,22 @@ class ProfileScreen extends StatelessWidget {
                         const SizedBox(height: 24),
 
                         // Action buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 12,
+                          runSpacing: 12,
                           children: [
                             OutlinedButton.icon(
                               icon: const Icon(Icons.tune),
                               label: const Text('Release Groups'),
                               onPressed: () => _navigateToReleaseGroups(context),
                             ),
+                            if (!isDemo)
+                              OutlinedButton.icon(
+                                icon: const Icon(Icons.qr_code_scanner),
+                                label: const Text('Web verbinden'),
+                                onPressed: () => _navigateToConnectWeb(context),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 32),
@@ -161,6 +170,12 @@ class ProfileScreen extends StatelessWidget {
   void _navigateToReleaseGroups(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const ReleaseGroupsScreen()),
+    );
+  }
+
+  void _navigateToConnectWeb(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ConnectWebScreen()),
     );
   }
 

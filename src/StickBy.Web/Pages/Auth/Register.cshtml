@@ -5,35 +5,107 @@
     ViewData["Title"] = L["auth.register"];
 }
 
-<div class="auth-container">
-    <h1>@L["auth.register"]</h1>
+<div class="auth-container app-download-page">
+    <div class="app-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+        </svg>
+    </div>
 
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-    {
-        <div class="error-message">@Model.ErrorMessage</div>
-    }
+    <h1>@L["auth.registerInApp"]</h1>
+    <p class="subtitle">@L["auth.registerInAppHint"]</p>
 
-    <form method="post">
-        <div class="form-group">
-            <label asp-for="DisplayName">@L["auth.displayName"]</label>
-            <input asp-for="DisplayName" type="text" class="form-control" required />
+    <div class="features">
+        <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>@L["onboarding.feature1"]</span>
         </div>
-
-        <div class="form-group">
-            <label asp-for="Email">@L["auth.email"]</label>
-            <input asp-for="Email" type="email" class="form-control" required />
+        <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>@L["onboarding.feature2"]</span>
         </div>
-
-        <div class="form-group">
-            <label asp-for="Password">@L["auth.password"]</label>
-            <input asp-for="Password" type="password" class="form-control" required />
-            <small>Mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahl</small>
+        <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>@L["onboarding.feature3"]</span>
         </div>
+    </div>
 
-        <button type="submit" class="btn-primary" style="width: 100%;">@L["auth.register"]</button>
-    </form>
+    <a href="~/Apk" class="btn-primary download-btn">
+        @L["auth.downloadApp"]
+    </a>
 
     <div class="auth-link">
-        <p>@L["auth.hasAccount"] <a href="~/Auth/Login">@L["nav.login"]</a></p>
+        <p>@L["auth.alreadyHaveApp"] <a href="~/Auth/Login">@L["auth.loginWithQr"]</a></p>
     </div>
 </div>
+
+<style>
+    .app-download-page {
+        max-width: 400px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .app-icon {
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+    }
+
+    .app-download-page h1 {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .subtitle {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+
+    .features {
+        text-align: left;
+        background: var(--background);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        color: var(--text);
+    }
+
+    .feature:last-child {
+        margin-bottom: 0;
+    }
+
+    .feature-icon {
+        color: var(--success);
+        font-weight: bold;
+    }
+
+    .download-btn {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        text-decoration: none;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-link {
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .auth-link p {
+        color: var(--text-secondary);
+        margin: 0;
+    }
+</style>

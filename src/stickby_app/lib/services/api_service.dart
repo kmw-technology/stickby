@@ -9,6 +9,7 @@ import '../models/contact.dart';
 import '../models/group.dart';
 import '../models/profile.dart';
 import '../models/share.dart';
+import '../models/web_session.dart';
 import 'storage_service.dart';
 
 class ApiException implements Exception {
@@ -421,5 +422,31 @@ class ApiService {
     } catch (_) {
       return false;
     }
+  }
+
+  // Web Session methods (QR pairing for StickBy Web)
+
+  /// Authorize a web session by scanning its QR code.
+  /// The pairing token is obtained from the QR code on the website.
+  Future<void> authorizeWebSession(String pairingToken) async {
+    await _post(ApiConfig.webSessionAuthorize, {
+      'pairingToken': pairingToken,
+    });
+  }
+
+  /// Get list of active web sessions for the current user.
+  Future<List<WebSession>> getWebSessions() async {
+    final data = await _get(ApiConfig.webSession);
+    return (data as List).map((e) => WebSession.fromJson(e)).toList();
+  }
+
+  /// Invalidate a specific web session.
+  Future<void> invalidateWebSession(String sessionId) async {
+    await _delete('${ApiConfig.webSession}/$sessionId');
+  }
+
+  /// Invalidate all web sessions.
+  Future<void> invalidateAllWebSessions() async {
+    await _delete(ApiConfig.webSession);
   }
 }

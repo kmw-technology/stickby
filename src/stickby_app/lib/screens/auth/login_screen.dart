@@ -5,7 +5,7 @@ import '../../providers/demo_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/gradient_button.dart';
-import '../demo/demo_sync_screen.dart';
+import '../../widgets/demo_identity_picker.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -75,9 +75,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleDemoMode() async {
-    final demoProvider = context.read<DemoProvider>();
+    // Show identity picker modal
+    final selectedIdentity = await showModalBottomSheet<DemoIdentity>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const DemoIdentityPicker(),
+    );
 
-    final success = await demoProvider.enableDemoMode();
+    if (selectedIdentity == null || !mounted) return;
+
+    final demoProvider = context.read<DemoProvider>();
+    final success = await demoProvider.enableDemoMode(identity: selectedIdentity);
 
     if (!success && mounted) {
       _showError(demoProvider.errorMessage ?? 'Failed to start demo mode');
@@ -218,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Divider(),
                     const SizedBox(height: 16),
 
-                    // Demo mode buttons
+                    // Demo mode button
                     Text(
                       'Want to try StickBy first?',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -227,7 +236,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
-                    // Quick solo demo
                     Consumer<DemoProvider>(
                       builder: (context, demoProvider, child) {
                         return OutlinedButton.icon(
@@ -239,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.play_circle_outline),
-                          label: Text(demoProvider.isLoading ? 'Loading Demo...' : 'Quick Demo'),
+                          label: Text(demoProvider.isLoading ? 'Loading...' : 'Try Demo'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.secondary,
                             side: BorderSide(color: AppColors.secondary),
@@ -250,22 +258,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         );
                       },
-                    ),
-                    const SizedBox(height: 8),
-                    // Multi-device sync demo
-                    TextButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const DemoSyncScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.devices, size: 18),
-                      label: const Text('Multi-Device Demo (Sync)'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary,
-                      ),
                     ),
                   ],
                 ),

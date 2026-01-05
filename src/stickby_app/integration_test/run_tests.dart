@@ -11,6 +11,7 @@
 //   flutter test integration_test/run_tests.dart --dart-define=SUITE=p2p
 //   flutter test integration_test/run_tests.dart --dart-define=SUITE=navigation
 //   flutter test integration_test/run_tests.dart --dart-define=SUITE=e2e
+//   flutter test integration_test/run_tests.dart --dart-define=SUITE=demo
 //   flutter test integration_test/run_tests.dart --dart-define=SUITE=all
 
 import 'package:flutter_test/flutter_test.dart';
@@ -24,6 +25,7 @@ import 'profile_test.dart' as profile_tests;
 import 'p2p_privacy_test.dart' as p2p_tests;
 import 'navigation_test.dart' as navigation_tests;
 import 'e2e_user_journey_test.dart' as e2e_tests;
+import 'demo_mode_test.dart' as demo_tests;
 
 const String suite = String.fromEnvironment('SUITE', defaultValue: 'all');
 
@@ -63,6 +65,10 @@ void main() {
       e2e_tests.main();
       break;
 
+    case 'demo':
+      demo_tests.main();
+      break;
+
     case 'all':
     default:
       group('All StickBy Integration Tests', () {
@@ -74,6 +80,7 @@ void main() {
         group('P2P Privacy Mode', p2p_tests.main);
         group('Navigation', navigation_tests.main);
         group('E2E User Journeys', e2e_tests.main);
+        group('Demo Mode', demo_tests.main);
       });
       break;
   }

@@ -7,6 +7,7 @@ using StickBy.Shared.Models.Contacts;
 using StickBy.Shared.Models.Groups;
 using StickBy.Shared.Models.Profile;
 using StickBy.Shared.Models.Shares;
+using StickBy.Shared.Models.WebSession;
 
 namespace StickBy.Web.Services;
 
@@ -43,6 +44,10 @@ public interface IApiService
 
     Task<List<CompanyDto>> GetCompaniesAsync(bool? isContractor = null);
     Task<CompanyDto?> GetCompanyAsync(Guid companyId);
+
+    // Web Session (QR code pairing)
+    Task<WebSessionCreateResponse?> CreateWebSessionAsync();
+    Task<WebSessionStatusResponse?> GetWebSessionStatusAsync(string pairingToken);
 }
 
 public class ApiService : IApiService
@@ -289,5 +294,18 @@ public class ApiService : IApiService
     public async Task<CompanyDto?> GetCompanyAsync(Guid companyId)
     {
         return await GetAsync<CompanyDto>($"api/company/{companyId}");
+    }
+
+    // Web Session (QR code pairing)
+    public async Task<WebSessionCreateResponse?> CreateWebSessionAsync()
+    {
+        var response = await _httpClient.PostAsync("api/web-session", null);
+        if (!response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<WebSessionCreateResponse>();
+    }
+
+    public async Task<WebSessionStatusResponse?> GetWebSessionStatusAsync(string pairingToken)
+    {
+        return await GetAsync<WebSessionStatusResponse>($"api/web-session/{pairingToken}/status");
     }
 }

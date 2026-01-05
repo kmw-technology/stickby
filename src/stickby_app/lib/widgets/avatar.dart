@@ -48,14 +48,32 @@ class Avatar extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       clipBehavior: Clip.antiAlias,
-      child: imageUrl != null && imageUrl!.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: imageUrl!,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => _buildPlaceholder(),
-              errorWidget: (_, __, ___) => _buildPlaceholder(),
-            )
-          : _buildPlaceholder(),
+      child: _buildImage(),
+    );
+  }
+
+  Widget _buildImage() {
+    if (imageUrl == null || imageUrl!.isEmpty) {
+      return _buildPlaceholder();
+    }
+
+    // Check if it is a local asset path
+    if (imageUrl!.startsWith('assets/')) {
+      return Image.asset(
+        imageUrl!,
+        fit: BoxFit.cover,
+        width: _size,
+        height: _size,
+        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+      );
+    }
+
+    // Otherwise use network image
+    return CachedNetworkImage(
+      imageUrl: imageUrl!,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => _buildPlaceholder(),
+      errorWidget: (_, __, ___) => _buildPlaceholder(),
     );
   }
 

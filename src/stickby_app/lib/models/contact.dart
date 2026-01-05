@@ -143,6 +143,9 @@ class Contact {
   final String value;
   final int sortOrder;
   final int releaseGroups;
+  // Owner info (for contacts received from others)
+  final String? ownerName;
+  final String? ownerImageUrl;
 
   Contact({
     required this.id,
@@ -151,6 +154,8 @@ class Contact {
     required this.value,
     this.sortOrder = 0,
     this.releaseGroups = ReleaseGroup.all,
+    this.ownerName,
+    this.ownerImageUrl,
   });
 
   factory Contact.fromJson(Map<String, dynamic> json) {
@@ -161,6 +166,8 @@ class Contact {
       value: json['value'] as String,
       sortOrder: json['sortOrder'] as int? ?? 0,
       releaseGroups: json['releaseGroups'] as int? ?? ReleaseGroup.all,
+      ownerName: json['ownerName'] as String?,
+      ownerImageUrl: json['ownerImageUrl'] as String?,
     );
   }
 
@@ -172,6 +179,8 @@ class Contact {
       'value': value,
       'sortOrder': sortOrder,
       'releaseGroups': releaseGroups,
+      'ownerName': ownerName,
+      'ownerImageUrl': ownerImageUrl,
     };
   }
 
@@ -182,6 +191,8 @@ class Contact {
     String? value,
     int? sortOrder,
     int? releaseGroups,
+    String? ownerName,
+    String? ownerImageUrl,
   }) {
     return Contact(
       id: id ?? this.id,
@@ -190,6 +201,8 @@ class Contact {
       value: value ?? this.value,
       sortOrder: sortOrder ?? this.sortOrder,
       releaseGroups: releaseGroups ?? this.releaseGroups,
+      ownerName: ownerName ?? this.ownerName,
+      ownerImageUrl: ownerImageUrl ?? this.ownerImageUrl,
     );
   }
 }

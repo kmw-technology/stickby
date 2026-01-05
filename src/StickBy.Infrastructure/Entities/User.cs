@@ -19,4 +19,5 @@ public class User : IdentityUser<Guid>
     public virtual ICollection<GroupMember> GroupMemberships { get; set; } = new List<GroupMember>();
     public virtual ICollection<Group> CreatedGroups { get; set; } = new List<Group>();
     public virtual ICollection<GroupShare> GroupShares { get; set; } = new List<GroupShare>();
+    public virtual ICollection<WebSession> WebSessions { get; set; } = new List<WebSession>();
 }

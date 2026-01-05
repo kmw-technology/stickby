@@ -5,29 +5,254 @@
     ViewData["Title"] = L["auth.login"];
 }
 
-<div class="auth-container">
-    <h1>@L["auth.login"]</h1>
+<div class="auth-container qr-login">
+    <div class="qr-header">
+        <h1>StickBy Web</h1>
+        <p class="qr-subtitle">@L["auth.scanToLogin"]</p>
+    </div>
 
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
         <div class="error-message">@Model.ErrorMessage</div>
     }
 
-    <form method="post">
-        <div class="form-group">
-            <label asp-for="Email">@L["auth.email"]</label>
-            <input asp-for="Email" type="email" class="form-control" required />
+    @if (!string.IsNullOrEmpty(Model.PairingToken))
+    {
+        <div class="qr-wrapper">
+            <div id="qrcode" class="qr-code"></div>
+            <div id="qr-status" class="qr-status">
+                <div class="spinner"></div>
+                <span>@L["auth.waitingForScan"]</span>
+            </div>
+            <div id="qr-expired" class="qr-expired" style="display: none;">
+                <span>@L["auth.qrExpired"]</span>
+                <button onclick="window.location.reload()" class="btn-secondary">
+                    @L["auth.refreshQr"]
+                </button>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label asp-for="Password">@L["auth.password"]</label>
-            <input asp-for="Password" type="password" class="form-control" required />
+        <div class="qr-instructions">
+            <h3>@L["auth.howToConnect"]</h3>
+            <ol>
+                <li>@L["auth.step1OpenApp"]</li>
+                <li>@L["auth.step2GoToSettings"]</li>
+                <li>@L["auth.step3ScanQr"]</li>
+            </ol>
         </div>
 
-        <button type="submit" class="btn-primary" style="width: 100%;">@L["auth.login"]</button>
-    </form>
+        <form id="completeForm" method="post" asp-page-handler="Complete" style="display: none;">
+            <input type="hidden" name="token" id="tokenInput" value="@Model.PairingToken" />
+        </form>
+    }
 
-    <div class="auth-link">
-        <p>@L["auth.noAccount"] <a href="~/Auth/Register">@L["nav.register"]</a></p>
+    <div class="app-download">
+        <p>@L["auth.noApp"]</p>
+        <a href="~/Apk" class="btn-secondary">@L["auth.downloadApp"]</a>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        (function() {
+            const pairingToken = '@Model.PairingToken';
+            const expiresAt = new Date('@Model.ExpiresAt?.ToString("o")');
+
+            if (!pairingToken) return;
+
+            // Generate QR code
+            const qrContainer = document.getElementById('qrcode');
+            QRCode.toCanvas(qrContainer, pairingToken, {
+                width: 256,
+                margin: 2,
+                color: {
+                    dark: '#2563eb',
+                    light: '#ffffff'
+                }
+            }, function(error) {
+                if (error) console.error(error);
+            });
+
+            // Add canvas to container instead of replacing
+            const canvas = qrContainer.querySelector('canvas');
+            if (canvas) {
+                canvas.style.borderRadius = '12px';
+            }
+
+            // Poll for status
+            let pollInterval;
+            const statusEl = document.getElementById('qr-status');
+            const expiredEl = document.getElementById('qr-expired');
+            const completeForm = document.getElementById('completeForm');
+
+            function checkStatus() {
+                // Check if expired
+                if (new Date() >= expiresAt) {
+                    clearInterval(pollInterval);
+                    statusEl.style.display = 'none';
+                    expiredEl.style.display = 'flex';
+                    qrContainer.style.opacity = '0.3';
+                    return;
+                }
+
+                fetch(`?handler=Status&token=${encodeURIComponent(pairingToken)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'authorized') {
+                            clearInterval(pollInterval);
+                            statusEl.innerHTML = '<div class="success-icon">✓</div><span>@L["auth.connected"]</span>';
+                            // Submit the form to complete login
+                            completeForm.submit();
+                        } else if (data.status === 'expired' || data.status === 'invalidated') {
+                            clearInterval(pollInterval);
+                            statusEl.style.display = 'none';
+                            expiredEl.style.display = 'flex';
+                            qrContainer.style.opacity = '0.3';
+                        }
+                    })
+                    .catch(err => console.error('Status check failed:', err));
+            }
+
+            // Start polling every 2 seconds
+            pollInterval = setInterval(checkStatus, 2000);
+
+            // Initial check
+            checkStatus();
+        })();
+    </script>
+}
+
+<style>
+    .qr-login {
+        max-width: 400px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .qr-header {
+        margin-bottom: 2rem;
+    }
+
+    .qr-header h1 {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .qr-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .qr-wrapper {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .qr-code {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .qr-code canvas {
+        border-radius: 12px;
+    }
+
+    .qr-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .success-icon {
+        width: 24px;
+        height: 24px;
+        background: var(--success);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .qr-expired {
+        flex-direction: column;
+        gap: 1rem;
+        color: var(--text-secondary);
+    }
+
+    .qr-instructions {
+        text-align: left;
+        background: var(--background);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .qr-instructions h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        color: var(--text);
+    }
+
+    .qr-instructions ol {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .qr-instructions li {
+        margin-bottom: 0.5rem;
+    }
+
+    .app-download {
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .app-download p {
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-secondary {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: var(--background);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background: var(--surface);
+        border-color: var(--primary);
+    }
+</style>

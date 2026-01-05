@@ -4,6 +4,7 @@ import '../models/contact.dart';
 import '../models/group.dart';
 import '../models/share.dart';
 import '../models/profile.dart';
+import '../widgets/demo_identity_picker.dart';
 import 'storage_service.dart';
 
 /// Service for managing Demo Mode.
@@ -24,12 +25,16 @@ class DemoService {
 
   bool _isEnabled = false;
   bool _isInitialized = false;
+  DemoIdentity? _currentIdentity;
 
   /// Check if demo mode is currently enabled.
   bool get isEnabled => _isEnabled;
 
   /// Check if demo mode has been initialized.
   bool get isInitialized => _isInitialized;
+
+  /// Get current demo identity.
+  DemoIdentity? get currentIdentity => _currentIdentity;
 
   /// Initialize demo service - check stored state.
   Future<void> initialize() async {
@@ -41,8 +46,9 @@ class DemoService {
     }
   }
 
-  /// Enable demo mode and load demo data.
-  Future<void> enableDemoMode() async {
+  /// Enable demo mode with a selected identity and load demo data.
+  Future<void> enableDemoMode({DemoIdentity? identity}) async {
+    _currentIdentity = identity ?? DemoIdentity.all.first;
     await _storage.setDemoModeEnabled(true);
     await _loadDemoData();
     await _storage.setDemoModeInitialized(true);
@@ -85,44 +91,139 @@ class DemoService {
   /// Get demo shares.
   List<Share> get demoShares => _demoShares ?? [];
 
-  /// Load demo data from assets.
+  /// Load demo data based on selected identity.
   Future<void> _loadDemoData() async {
     try {
-      // Load demo profile
-      final profileJson = await rootBundle.loadString('assets/data/demo_profile.json');
-      final profileData = jsonDecode(profileJson) as Map<String, dynamic>;
-      _demoProfile = Profile.fromJson(profileData);
+      if (_currentIdentity == null) {
+        _currentIdentity = DemoIdentity.all.first;
+      }
 
-      // Load demo contacts (received from others)
-      final contactsJson = await rootBundle.loadString('assets/data/demo_contacts.json');
-      final contactsData = jsonDecode(contactsJson) as List<dynamic>;
-      _demoContacts = contactsData
-          .map((e) => Contact.fromJson(e as Map<String, dynamic>))
-          .toList();
+      // Create profile from selected identity
+      _demoProfile = Profile(
+        id: _currentIdentity!.id,
+        email: _currentIdentity!.email,
+        displayName: _currentIdentity!.name,
+        profileImageUrl: _currentIdentity!.avatarPath,
+        contactsByCategory: _generateProfileContactsByCategory(),
+      );
 
-      // Load demo groups
-      final groupsJson = await rootBundle.loadString('assets/data/demo_groups.json');
-      final groupsData = jsonDecode(groupsJson) as List<dynamic>;
-      _demoGroups = groupsData
-          .map((e) => _groupFromDemoJson(e as Map<String, dynamic>, isActive: true))
-          .toList();
+      // Generate contacts - other demo identities become your contacts
+      _demoContacts = _generateDemoContacts();
 
-      // Load demo invitations
-      final invitationsJson = await rootBundle.loadString('assets/data/demo_invitations.json');
-      final invitationsData = jsonDecode(invitationsJson) as List<dynamic>;
-      _demoInvitations = invitationsData
-          .map((e) => _groupFromDemoJson(e as Map<String, dynamic>, isActive: false))
-          .toList();
+      // Generate demo groups
+      _demoGroups = [
+        Group(
+          id: 'demo-group-1',
+          name: 'Family',
+          description: 'Close family members',
+          memberCount: 4,
+          myRole: GroupMemberRole.owner,
+          myStatus: GroupMemberStatus.active,
+          createdAt: DateTime.now().subtract(const Duration(days: 30)),
+        ),
+        Group(
+          id: 'demo-group-2',
+          name: 'Work Team',
+          description: 'Colleagues from the office',
+          memberCount: 8,
+          myRole: GroupMemberRole.member,
+          myStatus: GroupMemberStatus.active,
+          createdAt: DateTime.now().subtract(const Duration(days: 14)),
+        ),
+      ];
 
-      // Load demo shares
-      final sharesJson = await rootBundle.loadString('assets/data/demo_shares.json');
-      final sharesData = jsonDecode(sharesJson) as List<dynamic>;
-      _demoShares = sharesData
-          .map((e) => _shareFromDemoJson(e as Map<String, dynamic>))
-          .toList();
+      // Generate demo invitations
+      _demoInvitations = [
+        Group(
+          id: 'demo-invite-1',
+          name: 'Sports Club',
+          description: 'Weekend hiking group',
+          memberCount: 12,
+          myRole: GroupMemberRole.member,
+          myStatus: GroupMemberStatus.pending,
+          createdAt: DateTime.now().subtract(const Duration(days: 2)),
+        ),
+      ];
+
+      // Generate demo shares
+      _demoShares = [
+        Share(
+          id: 'demo-share-1',
+          name: 'Business Card',
+          token: 'demo-biz-card',
+          contactIds: ['prof-email', 'prof-phone'],
+          expiresAt: null,
+          viewCount: 23,
+          createdAt: DateTime.now().subtract(const Duration(days: 7)),
+        ),
+      ];
     } catch (e) {
       print('DemoService: Error loading demo data: $e');
     }
+  }
+
+  /// Generate profile contacts by category for the current identity.
+  Map<String, List<Contact>> _generateProfileContactsByCategory() {
+    return {
+      'General': [
+        Contact(
+          id: 'prof-email',
+          type: ContactType.email,
+          label: 'Personal',
+          value: _currentIdentity!.email,
+          releaseGroups: ReleaseGroup.all,
+        ),
+      ],
+      'Private': [
+        Contact(
+          id: 'prof-phone',
+          type: ContactType.mobile,
+          label: 'Mobile',
+          value: '+49 151 ${_currentIdentity!.name.hashCode.abs() % 10000000}',
+          releaseGroups: ReleaseGroup.family | ReleaseGroup.friends,
+        ),
+      ],
+      'Social': [
+        Contact(
+          id: 'prof-linkedin',
+          type: ContactType.linkedin,
+          label: 'LinkedIn',
+          value: 'linkedin.com/in/${_currentIdentity!.id}',
+          releaseGroups: ReleaseGroup.business,
+        ),
+      ],
+    };
+  }
+
+  /// Generate demo contacts from other identities.
+  List<Contact> _generateDemoContacts() {
+    final contacts = <Contact>[];
+
+    // Each other identity becomes a contact
+    for (final identity in DemoIdentity.all) {
+      if (identity.id == _currentIdentity!.id) continue;
+
+      contacts.add(Contact(
+        id: 'contact-${identity.id}-email',
+        type: ContactType.email,
+        label: identity.name,
+        value: identity.email,
+        releaseGroups: ReleaseGroup.all,
+        ownerImageUrl: identity.avatarPath,
+      ));
+
+      contacts.add(Contact(
+        id: 'contact-${identity.id}-phone',
+        type: ContactType.mobile,
+        label: identity.name,
+        value: '+49 151 ${identity.name.hashCode.abs() % 10000000}',
+        releaseGroups: ReleaseGroup.friends,
+        ownerName: identity.name,
+        ownerImageUrl: identity.avatarPath,
+      ));
+    }
+
+    return contacts;
   }
 
   /// Clear cached demo data.
@@ -132,6 +233,7 @@ class DemoService {
     _demoGroups = null;
     _demoInvitations = null;
     _demoShares = null;
+    _currentIdentity = null;
   }
 
   /// Create Group from demo JSON format.

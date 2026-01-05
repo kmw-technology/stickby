@@ -179,13 +179,34 @@ class TestHelpers {
     double delta = 100,
     int maxScrolls = 20,
   }) async {
+    // If widget is already visible, return early
+    if (finder.evaluate().isNotEmpty) return;
+
+    // Find a scrollable widget
+    Finder scrollFinder;
+    if (scrollable != null && scrollable.evaluate().isNotEmpty) {
+      scrollFinder = scrollable;
+    } else if (find.byType(ListView).evaluate().isNotEmpty) {
+      scrollFinder = find.byType(ListView).first;
+    } else if (find.byType(SingleChildScrollView).evaluate().isNotEmpty) {
+      scrollFinder = find.byType(SingleChildScrollView).first;
+    } else if (find.byType(CustomScrollView).evaluate().isNotEmpty) {
+      scrollFinder = find.byType(CustomScrollView).first;
+    } else {
+      // No scrollable found, just return
+      debugPrint('scrollUntilVisible: No scrollable widget found');
+      return;
+    }
+
     int scrolls = 0;
     while (finder.evaluate().isEmpty && scrolls < maxScrolls) {
-      await tester.drag(
-        scrollable ?? find.byType(ListView).first,
-        Offset(0, -delta),
-      );
-      await tester.pumpAndSettle();
+      try {
+        await tester.drag(scrollFinder, Offset(0, -delta));
+        await tester.pumpAndSettle();
+      } catch (e) {
+        debugPrint('scrollUntilVisible: Error during scroll: $e');
+        break;
+      }
       scrolls++;
     }
   }
@@ -247,6 +268,83 @@ class TestHelpers {
   /// Take a screenshot (for debugging)
   static Future<void> takeScreenshot(WidgetTester tester, String name) async {
     debugPrint('Screenshot: $name');
+  }
+
+  /// Enter demo mode with a specific identity
+  static Future<bool> enterDemoMode(
+    WidgetTester tester, {
+    String identity = 'Nicolas',
+  }) async {
+    await waitForApp(tester);
+
+    // Check if already on main screen (demo mode already active)
+    if (find.byType(BottomNavigationBar).evaluate().isNotEmpty) {
+      debugPrint('Already in demo mode or logged in');
+      return true;
+    }
+
+    // Find the demo button - may need to scroll to it
+    final demoButton = find.text('Try Demo');
+    if (demoButton.evaluate().isEmpty) {
+      debugPrint('Could not find Try Demo button');
+      return false;
+    }
+
+    // Scroll to make the button visible
+    await tester.ensureVisible(demoButton);
+    await tester.pumpAndSettle();
+
+    await tester.tap(demoButton);
+    await tester.pumpAndSettle();
+
+    // Wait for identity picker to appear
+    final identityPicker = find.text('Choose Your Demo Identity');
+    if (identityPicker.evaluate().isEmpty) {
+      debugPrint('Identity picker did not appear');
+      return false;
+    }
+
+    // Find and tap the identity
+    final identityWidget = find.text(identity);
+    if (identityWidget.evaluate().isEmpty) {
+      debugPrint('Could not find identity: $identity');
+      return false;
+    }
+
+    await tester.tap(identityWidget);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+
+    // Check if we're on main screen
+    return find.byType(BottomNavigationBar).evaluate().isNotEmpty;
+  }
+
+  /// Exit demo mode (go back to login screen)
+  static Future<void> exitDemoMode(WidgetTester tester) async {
+    // Navigate to profile tab
+    await navigateToTab(tester, TabIndex.profile);
+    await tester.pumpAndSettle();
+
+    // Look for Exit Demo button first
+    final exitButton = find.textContaining('Exit');
+    if (exitButton.evaluate().isNotEmpty) {
+      await tester.tap(exitButton.first);
+      await tester.pumpAndSettle();
+      return;
+    }
+
+    // Fall back to Logout button
+    final logoutButton = find.text('Logout');
+    if (logoutButton.evaluate().isNotEmpty) {
+      await tester.tap(logoutButton);
+      await tester.pumpAndSettle();
+
+      // Confirm logout if dialog appears
+      final confirmButton = find.text('Logout');
+      if (confirmButton.evaluate().length > 1) {
+        await tester.tap(confirmButton.last);
+        await tester.pumpAndSettle();
+      }
+    }
   }
 
   /// Print all visible text widgets (for debugging)

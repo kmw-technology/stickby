@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using StickBy.Shared.Models.Auth;
+using StickBy.Shared.Models.WebSession;
 using StickBy.Web.Services;
 
 namespace StickBy.Web.Pages.Auth;
@@ -16,46 +17,55 @@ public class LoginModel : PageModel
         _apiService = apiService;
     }
 
-    [BindProperty]
-    public string Email { get; set; } = string.Empty;
-
-    [BindProperty]
-    public string Password { get; set; } = string.Empty;
-
+    public string? PairingToken { get; set; }
+    public DateTime? ExpiresAt { get; set; }
     public string? ErrorMessage { get; set; }
 
-    public void OnGet()
+    public async Task<IActionResult> OnGetAsync()
     {
-    }
-
-    public async Task<IActionResult> OnPostAsync()
-    {
-        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+        // Create a new web session for QR pairing
+        var session = await _apiService.CreateWebSessionAsync();
+        if (session == null)
         {
-            ErrorMessage = "Bitte E-Mail und Passwort eingeben.";
+            ErrorMessage = "Verbindung zum Server fehlgeschlagen.";
             return Page();
         }
 
-        var result = await _apiService.LoginAsync(new LoginRequest
-        {
-            Email = Email,
-            Password = Password
-        });
+        PairingToken = session.PairingToken;
+        ExpiresAt = session.ExpiresAt;
 
-        if (result == null)
+        return Page();
+    }
+
+    /// <summary>
+    /// Called when the JavaScript detects that the session has been authorized.
+    /// Completes the sign-in process.
+    /// </summary>
+    public async Task<IActionResult> OnPostCompleteAsync([FromForm] string token)
+    {
+        if (string.IsNullOrEmpty(token))
         {
-            ErrorMessage = "Ungültige Anmeldedaten.";
+            ErrorMessage = "Ungültiger Token.";
+            return Page();
+        }
+
+        // Get the session status to retrieve auth tokens
+        var status = await _apiService.GetWebSessionStatusAsync(token);
+        if (status == null || status.Status != WebSessionStatus.Authorized || status.Auth == null)
+        {
+            ErrorMessage = "Sitzung nicht autorisiert.";
             return Page();
         }
 
         // Store the API token
-        _apiService.SetAccessToken(result.AccessToken);
+        _apiService.SetAccessToken(status.Auth.AccessToken);
 
         // Create authentication cookie
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Email, Email),
-            new(ClaimTypes.Name, result.User?.DisplayName ?? Email)
+            new(ClaimTypes.Email, status.Auth.User?.Email ?? ""),
+            new(ClaimTypes.Name, status.Auth.User?.DisplayName ?? "User"),
+            new(ClaimTypes.NameIdentifier, status.Auth.User?.Id.ToString() ?? "")
         };
 
         var identity = new ClaimsIdentity(claims, "Cookies");
@@ -64,5 +74,24 @@ public class LoginModel : PageModel
         await HttpContext.SignInAsync("Cookies", principal);
 
         return RedirectToPage("/Home");
+    }
+
+    /// <summary>
+    /// API endpoint for JavaScript to poll session status.
+    /// </summary>
+    public async Task<IActionResult> OnGetStatusAsync([FromQuery] string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return new JsonResult(new { status = "error" });
+        }
+
+        var status = await _apiService.GetWebSessionStatusAsync(token);
+        if (status == null)
+        {
+            return new JsonResult(new { status = "error" });
+        }
+
+        return new JsonResult(new { status = status.Status.ToString().ToLower() });
     }
 }

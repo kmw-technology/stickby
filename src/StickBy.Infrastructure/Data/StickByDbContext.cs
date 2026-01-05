@@ -23,6 +23,7 @@ public class StickByDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid
     public DbSet<GroupShareContact> GroupShareContacts => Set<GroupShareContact>();
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<ApkRelease> ApkReleases => Set<ApkRelease>();
+    public DbSet<WebSession> WebSessions => Set<WebSession>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -235,6 +236,26 @@ public class StickByDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid
             entity.HasIndex(a => a.Version);
             entity.HasIndex(a => a.IsLatest);
             entity.HasIndex(a => a.UploadedAt);
+        });
+
+        // WebSession configuration
+        builder.Entity<WebSession>(entity =>
+        {
+            entity.HasKey(ws => ws.Id);
+            entity.Property(ws => ws.PairingToken).HasMaxLength(256).IsRequired();
+            entity.Property(ws => ws.AccessToken).HasMaxLength(2000);
+            entity.Property(ws => ws.RefreshToken).HasMaxLength(256);
+            entity.Property(ws => ws.UserAgent).HasMaxLength(500);
+            entity.Property(ws => ws.IpAddress).HasMaxLength(50);
+            entity.Property(ws => ws.DeviceName).HasMaxLength(100);
+
+            entity.HasOne(ws => ws.User)
+                .WithMany(u => u.WebSessions)
+                .HasForeignKey(ws => ws.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ws => ws.PairingToken).IsUnique();
+            entity.HasIndex(ws => ws.UserId);
         });
     }
 }

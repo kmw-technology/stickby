@@ -1,6 +1,7 @@
 class ApiConfig {
   static const String baseUrl = 'https://www.kmw-technology.de/stickby/backend';
-  static const String wsBaseUrl = 'wss://www.kmw-technology.de/stickby/backend';
+  // SignalR uses HTTPS for connection negotiation, then upgrades to WebSocket
+  static const String wsBaseUrl = 'https://www.kmw-technology.de/stickby/backend';
 
   // Auth endpoints
   static const String login = '/api/auth/login';
@@ -30,6 +31,10 @@ class ApiConfig {
   static const String demoSession = '/api/demo/session'; // + /{sessionCode}
   static const String demoIdentities = '/api/demo/identities';
   static const String demoSyncHub = '/hubs/demosync';
+
+  // Web session endpoints (QR pairing for StickBy Web)
+  static const String webSession = '/api/web-session';
+  static const String webSessionAuthorize = '/api/web-session/authorize';
 
   // Health check
   static const String health = '/health';

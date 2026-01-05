@@ -4,6 +4,7 @@ import '../models/group.dart';
 import '../models/share.dart';
 import '../models/profile.dart';
 import '../services/demo_service.dart';
+import '../widgets/demo_identity_picker.dart';
 
 /// Provider for managing demo mode state.
 /// Demo mode uses pre-populated sample data to showcase the app.
@@ -28,14 +29,17 @@ class DemoProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Enable demo mode.
-  Future<bool> enableDemoMode() async {
+  /// Get current demo identity.
+  DemoIdentity? get currentIdentity => _demoService.currentIdentity;
+
+  /// Enable demo mode with a selected identity.
+  Future<bool> enableDemoMode({DemoIdentity? identity}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _demoService.enableDemoMode();
+      await _demoService.enableDemoMode(identity: identity);
       _isLoading = false;
       notifyListeners();
       return true;

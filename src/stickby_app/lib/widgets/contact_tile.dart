@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/contact.dart';
 import '../theme/app_theme.dart';
+import 'avatar.dart';
 
 class ContactTile extends StatelessWidget {
   final Contact contact;
@@ -22,19 +23,7 @@ class ContactTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         onTap: onTap,
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.primaryLight,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            _getIconForType(contact.type),
-            color: AppColors.primary,
-            size: 20,
-          ),
-        ),
+        leading: _buildLeading(),
         title: Text(contact.label),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,6 +47,34 @@ class ContactTile extends StatelessWidget {
                 onPressed: onDelete,
               )
             : null,
+      ),
+    );
+  }
+
+  Widget _buildLeading() {
+    // Show owner photo if available (contacts from other people)
+    if (contact.ownerImageUrl != null && contact.ownerImageUrl!.isNotEmpty) {
+      return Avatar(
+        imageUrl: contact.ownerImageUrl,
+        initials: contact.ownerName?.isNotEmpty == true
+            ? contact.ownerName!.split(' ').map((n) => n[0]).take(2).join()
+            : contact.label[0].toUpperCase(),
+        size: AvatarSize.small,
+      );
+    }
+
+    // Default: show icon based on contact type
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(
+        _getIconForType(contact.type),
+        color: AppColors.primary,
+        size: 20,
       ),
     );
   }
